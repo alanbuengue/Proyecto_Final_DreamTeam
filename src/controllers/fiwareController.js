@@ -1,14 +1,13 @@
 
 const axios = require('axios');
 
+const SERVER_IP = "46.17.108.45";
+const ORION_PORT = "1026";
 
 // Get Orion Version
 exports.getVersion = async function(req,res) {
     
-    let serverIp = "46.17.108.45";
-    let orionPort = "1026";
-    
-    let orionUrl = "http://" + serverIp + ":" + orionPort + "/version";
+    let orionUrl = "http://" + SERVER_IP + ":" + ORION_PORT + "/version";
     
     let config = {
         method: 'get',
@@ -29,10 +28,7 @@ exports.getVersion = async function(req,res) {
 // Get Orion Entities
 exports.getOrionEntities = async function(req,res) {
     
-    let serverIp = "46.17.108.45";
-    let orionPort = "1026";
-    
-    let orionUrl = "http://" + serverIp + ":" + orionPort + "/v2/entities";
+    let orionUrl = "http://" + SERVER_IP + ":" + ORION_PORT + "/v2/entities";
     
     let config = {
         method: 'get',
@@ -46,6 +42,5 @@ exports.getOrionEntities = async function(req,res) {
     } catch(err) {
         return res.status(400).send(err);
     }
-    
 
 }
