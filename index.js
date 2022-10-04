@@ -10,5 +10,12 @@ app.get('/hello', function(req,res) {
     return res.json("Hello World");
 });
 
+// Fiware Routes
+
+// Orion - Get Version
+const fiwareRouter = require("./src/routes/fiwareRoutes");
+app.get('/orion', fiwareRouter);
+app.get('/orion/entities', fiwareRouter);
+
 
 app.listen(5555);
