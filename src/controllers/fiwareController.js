@@ -41,7 +41,7 @@ exports.getOrionEntities = async function (req, res) {
     }
 };
 
-exports.sendSesorData = async function (req, res) {
+exports.sendSensorData = async function (req, res) {
     // must come from req.body
     let IOT_DEVICE_ID = 'ambiente-sensor:001';
     let FIWARE_SERVICE = 'sensor';

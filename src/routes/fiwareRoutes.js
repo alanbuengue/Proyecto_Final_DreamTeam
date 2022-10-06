@@ -7,7 +7,7 @@ router.get('/orion', fiwareController.getVersion);
 router.get('/orion/entities', fiwareController.getOrionEntities);
 
 // IOT Agent
-router.post('/iot', fiwareController.sendSesorData);
+router.post('/iot', fiwareController.sendSensorData);
 router.get('/iot', fiwareController.getSensorData);
 
 module.exports = router;
