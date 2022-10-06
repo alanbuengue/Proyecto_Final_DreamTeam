@@ -47,6 +47,8 @@ exports.sendSesorData = async function (req, res) {
     let FIWARE_SERVICE = 'sensor';
     let SERVICE_PATH = '/';
 
+    let iotUrl = 'http://' + SERVER_IP + ':' + IOTA_PORT + '/iot/json';
+
     // sensor data should be randomly generated
 
     let temp = '12';
@@ -68,7 +70,7 @@ exports.sendSesorData = async function (req, res) {
 
     var config = {
         method: 'post',
-        url: 'http://' + SERVER_IP + ':' + IOTA_PORT + '/iot/json',
+        url: iotUrl,
         headers: {
             'Fiware-Service': FIWARE_SERVICE,
             'Fiware-ServicePath': SERVICE_PATH,
