@@ -47,13 +47,13 @@ exports.sendSesorData = async function (req, res) {
     let FIWARE_SERVICE = 'sensor';
     let SERVICE_PATH = '/';
 
-    let iotUrl = 'http://' + SERVER_IP + ':' + IOTA_PORT + '/iot/json';
+    let iotUrlPost = 'http://' + SERVER_IP + ':' + IOTA_PORT + '/iot/json';
 
     // sensor data should be randomly generated
 
-    let temp = '12';
-    let hum = '30';
-    let aci = '7';
+    let temp = '18';
+    let hum = '22.2';
+    let aci = '7.3';
 
     // sends a string
     var data = JSON.stringify([
@@ -70,7 +70,7 @@ exports.sendSesorData = async function (req, res) {
 
     var config = {
         method: 'post',
-        url: iotUrl,
+        url: iotUrlPost,
         headers: {
             'Fiware-Service': FIWARE_SERVICE,
             'Fiware-ServicePath': SERVICE_PATH,
@@ -100,9 +100,11 @@ exports.getSensorData = async function (req, res) {
     let FIWARE_SERVICE = 'sensor';
     let SERVICE_PATH = '/';
 
+    let iotUrlGet = 'http://' + SERVER_IP + ':' + ORION_PORT + '/v2/entities/' + ENTITY_ID;
+
     var config = {
         method: 'get',
-        url: 'http://46.17.108.45:1026/v2/entities/' + ENTITY_ID,
+        url: iotUrlGet,
         headers: {
             Accept: '*/*',
             Connection: 'keep-alive',

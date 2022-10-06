@@ -18,8 +18,9 @@ app.get('/orion', fiwareRouter);
 app.get('/orion/entities', fiwareRouter);
 
 // IOT get / post info to device
-app.post('/iot', fiwareRouter);
 app.get('/iot', fiwareRouter);
+app.post('/iot', fiwareRouter);
+
 
 
 app.listen(5555);
