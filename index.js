@@ -16,10 +16,15 @@ app.get('/hello', function(req,res) {
 const fiwareRouter = require("./src/routes/fiwareRoutes");
 app.get('/orion', fiwareRouter);
 app.get('/orion/entities', fiwareRouter);
+app.post('/orion/entities', fiwareRouter);
+
 
 // IOT get / post info to device
 app.get('/iot', fiwareRouter);
 app.post('/iot', fiwareRouter);
+
+// create a IoT service
+app.post('/iot/services',fiwareRouter);
 
 
 
