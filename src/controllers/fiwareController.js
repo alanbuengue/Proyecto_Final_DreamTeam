@@ -6,6 +6,9 @@ const API_KEY    = 'asd12345';
 const IOTA_PORT  = '7896';
 const IOTA_SERVICE_PORT = '4041';
 
+
+// ORION -----------------------------------------------------------------
+
 // Get Orion Version
 exports.getVersion = async function (req, res) {
     let orionUrl = 'http://' + SERVER_IP + ':' + ORION_PORT + '/version';
@@ -138,6 +141,8 @@ exports.deleteEntity = async function(req,res) {
     }
 };
 
+// SENSOR -----------------------------------------------------------------
+
 // Get Sensor Measurments Info.
 
 exports.getSensorData = async function(req, res) {
@@ -173,6 +178,7 @@ exports.getSensorData = async function(req, res) {
     }
 };
 
+// IOT -----------------------------------------------------------------
 
 // Sends Info to IOT Device as a Sensor Would
 
@@ -227,6 +233,31 @@ exports.sendSensorData = async function (req, res) {
     }
 };
 
+
+// Get IOT Services from a type 
+exports.getIotServices = async function (req, res) {
+    
+    let orionUrl = 'http://' + SERVER_IP + ':' + IOTA_SERVICE_PORT + '/iot/services';
+    let iotService = "sensor";
+    let servicePath = "/";
+
+    let config = {
+        method: 'get',
+        url: orionUrl,
+        headers: { 
+            'Fiware-Service': iotService, 
+            'Fiware-ServicePath': servicePath, 
+          },
+        timeout:2000
+    };
+
+    try {
+        let response = await axios(config);
+        return res.status(200).send(response.data);
+    } catch (err) {
+        return res.status(400).send(err);
+    }
+};
 
 // Creates a IOT Service, to later provision a sensor for that Service
 

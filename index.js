@@ -23,6 +23,7 @@ app.delete('/orion/entities', fiwareRouter);
 // IOT get / post info to device
 app.get('/iot', fiwareRouter);
 app.post('/iot', fiwareRouter);
+app.get('/iot/services',fiwareRouter);
 
 // create a IoT service
 app.post('/iot/services',fiwareRouter);

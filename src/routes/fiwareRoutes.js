@@ -13,6 +13,7 @@ router.delete('/orion/entities',fiwareController.deleteEntity);
 router.post('/iot', fiwareController.sendSensorData);
 router.get('/iot', fiwareController.getSensorData);
 
+router.get('/iot/services',fiwareController.getIotServices);
 router.post('/iot/services',fiwareController.createIotService);
 
 module.exports = router;
