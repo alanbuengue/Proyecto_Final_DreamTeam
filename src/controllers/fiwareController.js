@@ -24,7 +24,7 @@ exports.getVersion = async function (req, res) {
     }
 };
 
-// Get Orion Entities
+// Get All Orion Entities
 exports.getOrionEntities = async function (req, res) {
     let orionUrl = 'http://' + SERVER_IP + ':' + ORION_PORT + '/v2/entities';
     
@@ -84,7 +84,7 @@ exports.createOrionEntity = async function(req,res) {
             "type": "Number"
         },
         
-        });
+    });
 
     let config = {
         method: 'post',
@@ -103,17 +103,46 @@ exports.createOrionEntity = async function(req,res) {
         let response = await axios(config);
         return res.status(201).send(response.data);
     } catch (err) {
-        console.log(err)
+        
         return res.send(err);
     }
 
 };
 
+// Delete Orion Entity
+exports.deleteEntity = async function(req,res) {
+    
+    // entity data
+    // let entityId = req.body.entityId;
+    let service     = "sensor";
+    let servicePath = "/";
+    let entityId    = "new:002";
 
+    let config = {
+        method: 'delete',
+        url: 'http://'+ SERVER_IP +':'+ ORION_PORT +'/v2/entities/' + entityId,
+        headers: { 
+            'Fiware-Service': service, 
+            'Fiware-ServicePath': servicePath, 
+            'X-Auth-Token': API_KEY
+        },
+        timeout: 2000,
+    };
 
-exports.getSensorData = async function (req, res) {
-    // must come from req.body
+    try {
+        let response = await axios(config);
+        return res.status(201).send(response.data);
+    } catch (err) {
+        console.log(err)
+        return res.send(err);
+    }
+};
 
+// Get Sensor Measurments Info.
+
+exports.getSensorData = async function(req, res) {
+    
+    // these should come from req.body / req.params
     let ENTITY_ID = 'ambiente:001';
     let ENTITY_TYPE = 'Ambiente';
     let FIWARE_SERVICE = 'sensor';
@@ -144,6 +173,8 @@ exports.getSensorData = async function (req, res) {
     }
 };
 
+
+// Sends Info to IOT Device as a Sensor Would
 
 exports.sendSensorData = async function (req, res) {
     // must come from req.body
@@ -197,6 +228,7 @@ exports.sendSensorData = async function (req, res) {
 };
 
 
+// Creates a IOT Service, to later provision a sensor for that Service
 
 exports.createIotService = async function(req,res) {
 
@@ -237,21 +269,21 @@ exports.createIotService = async function(req,res) {
         let response = await axios(config);
         return res.status(201).send(response.data);
     } catch (err) {
-        console.log(err);
+        
         return res.send(err);
     }
 
-    // After creating a Service the device should be creater
-    // deberia llamar a create iot device 
+    // After creating a Service the device should be created
 
 }
 
+
+// Creates a IOT Device for a given service
+
 exports.createIotDevice = async function(req,res) {
 
-
     // Create IoT Agent
-    // Aca defino el device_id que luego va a ser usado para enviarle info
-
+    // The device_id will later receive info. from a sensor / put request
 
     let IOT_DEVICE_ID   = "ambiente-sensor:002";
     let IOT_ENTITY_NAME = "ambiente:002";
@@ -316,7 +348,6 @@ exports.createIotDevice = async function(req,res) {
         let response = await axios(config);
         return res.status(201).send(response.data);
     } catch (err) {
-        console.log(err);
         return res.send(err);
     }
 

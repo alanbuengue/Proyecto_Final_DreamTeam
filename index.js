@@ -17,6 +17,7 @@ const fiwareRouter = require("./src/routes/fiwareRoutes");
 app.get('/orion', fiwareRouter);
 app.get('/orion/entities', fiwareRouter);
 app.post('/orion/entities', fiwareRouter);
+app.delete('/orion/entities', fiwareRouter);
 
 
 // IOT get / post info to device

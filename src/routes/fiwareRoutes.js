@@ -6,7 +6,8 @@ const router = express.Router();
 router.get('/orion', fiwareController.getVersion);
 router.get('/orion/entities', fiwareController.getOrionEntities);
 router.post('/orion/entities', fiwareController.createOrionEntity);
-
+// rememmber to send id by post
+router.delete('/orion/entities',fiwareController.deleteEntity);
 
 // IOT Agent
 router.post('/iot', fiwareController.sendSensorData);
