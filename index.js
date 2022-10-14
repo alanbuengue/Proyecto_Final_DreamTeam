@@ -10,5 +10,11 @@ app.get('/hello', function(req,res) {
     return res.json("Hello World");
 });
 
+app.get('/', function(req,res) {
+    return res.json("Holis");
+});
 
 app.listen(5555);
+
+
+

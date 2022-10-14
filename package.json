@@ -29,5 +29,8 @@
     "url": "https://github.com/alanbuengue/Proyecto_Final_DreamTeam/issues"
   },
   "homepage": "https://github.com/alanbuengue/Proyecto_Final_DreamTeam#readme",
+  "directories": {
+    "test": "test"
+  },
   "description": ""
 }
