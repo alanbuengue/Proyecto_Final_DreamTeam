@@ -341,3 +341,212 @@ app.put('/Irrigation/:id', async function (req, res) {
         res.status(500).json('No se pudo realizar la operacion');
     }
 })
+
+
+//********************************************************************** */
+//ABM COMMENT
+
+
+app.post('/comment', async function (req, res) {
+
+    const { idIrrigation, text } = req.body;
+
+    try {
+
+        if (idIrrigation == "" || text == "" ) {
+            res.status(401).json('Los valores no pueden ser nulos');
+        } else {
+
+            await Comment.create({
+                idIrrigation: idIrrigation,
+                text: text,
+            })
+            res.status(201).json('Comentario creado!');
+        }
+    } catch (err) {
+        res.status(500).json('Fallo la creacion del comentario.');
+    }
+})
+
+app.put('/comment/:id', async function (req, res) {
+
+    const { idIrrigation, text } = req.body;
+    let id = req.params.id;
+
+    try {
+        let auxComment = await Comment.findOne({
+            where: { id: id }
+        })
+        if (auxComment != null) {
+
+            if (idIrrigation != "") {
+                auxComment.idIrrigation = idIrrigation;
+            }
+
+            if (text != "") {
+                auxComment.text = text;
+            }
+
+            await auxComment.save();
+            res.status(201).json('Se registró los cambios del comentario ' + id);
+
+        } else {
+            res.status(401).json('El comentario con Id ' + id + " no existe.");
+        }
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+})
+
+
+//********************************************************************** */
+//ABM sensor
+
+
+app.post('/sensor', async function (req, res) {
+
+    const {description, fiware_update_url, ph_measured, ac_measured,
+        hu_measured, fiware_id  } = req.body;
+
+
+    try {
+
+        if (description == "" || fiware_update_url == "" || ph_measured == "" 
+            || ac_measured == "" || hu_measured == "" || fiware_id == "" ) {
+
+            res.status(401).json('Los valores no pueden ser nulos');
+        } else {
+
+            await Sensor.create({
+                status: false,
+                description: description,
+                fiware_update_url: fiware_update_url,
+                ph_measured: ph_measured,
+                ac_measured: ac_measured,
+                hu_measured: hu_measured,
+                fiware_id: fiware_id
+            })
+            res.status(201).json('Sensor creado!');
+        }
+    } catch (err) {
+        res.status(500).json('Fallo la creacion del sensor.');
+    }
+})
+
+app.put('/sensor/:id', async function (req, res) {
+
+    const {status, description, fiware_update_url, ph_measured, ac_measured,
+        hu_measured, fiware_id  } = req.body;
+    let id = req.params.id;
+
+    try {
+        let auxSensor = await Sensor.findOne({
+            where: { id: id }
+        })
+        if (auxSensor != null) {
+
+            if (status != "") {
+                auxSensor.status = status;
+            }
+
+            if (description != "") {
+                auxSensor.description = description;
+            }
+            if (fiware_update_url != "") {
+                auxSensor.fiware_update_url = fiware_update_url;
+            }
+
+            if (ph_measured != "") {
+                auxSensor.ph_measured = ph_measured;
+            }
+            if (ac_measured != "") {
+                auxSensor.ac_measured = ac_measured;
+            }
+
+            if (hu_measured != "") {
+                auxSensor.hu_measured = hu_measured;
+            }
+            if (fiware_id != "") {
+                auxSensor.fiware_id = fiware_id;
+            }
+
+            await auxSensor.save();
+            res.status(201).json('Se registró los cambios del sensor ' + id);
+
+        } else {
+            res.status(401).json('El sensor con Id ' + id + " no existe.");
+        }
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+})
+
+
+//********************************************************************** */
+//ABM AMBIENT
+
+
+app.post('/ambient', async function (req, res) {
+
+    const { temp, land_humidity, land_ph, latitude, longitude } = req.body;
+
+    try {
+
+        if (temp == "" || land_humidity == "" || land_ph == "" || latitude == ""
+        || longitude == "") {
+            res.status(401).json('Los valores no pueden ser nulos');
+        } else {
+
+            await Ambient.create({
+                temp: temp,
+                land_humidity: land_humidity,
+                land_ph: land_ph,
+                latitude: latitude,
+                longitude: longitude
+            })
+            res.status(201).json('Ambiente creado!');
+        }
+    } catch (err) {
+        res.status(500).json('Fallo la creacion del ambiente.');
+    }
+})
+
+app.put('/ambient/:id', async function (req, res) {
+
+    const { temp, land_humidity, land_ph, latitude, longitude } = req.body;
+    let id = req.params.id;
+
+    try {
+        let auxAmbient = await Ambient.findOne({
+            where: { id: id }
+        })
+        if (auxAmbient != null) {
+
+            if (temp != "") {
+                auxAmbient.temp = temp;
+            }
+
+            if (land_humidity != "") {
+                auxAmbient.land_humidity = land_humidity;
+            }
+            if (land_ph != "") {
+                auxAmbient.land_ph = land_ph;
+            }
+
+            if (latitude != "") {
+                auxAmbient.latitude = latitude;
+            }
+            if (longitude != "") {
+                auxAmbient.longitude = longitude;
+            }
+
+            await auxAmbient.save();
+            res.status(201).json('Se registró los cambios del ambiente ' + id);
+
+        } else {
+            res.status(401).json('El ambiente con Id ' + id + " no existe.");
+        }
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+})
