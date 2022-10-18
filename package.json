@@ -6,6 +6,7 @@
     "express": "^4.18.1",
     "mocha": "^10.0.0",
     "mysql2": "^2.3.3",
+    "node-fetch": "^2.6.7",
     "nodemon": "^2.0.20",
     "sequelize": "^6.24.0"
   },
@@ -29,5 +30,8 @@
     "url": "https://github.com/alanbuengue/Proyecto_Final_DreamTeam/issues"
   },
   "homepage": "https://github.com/alanbuengue/Proyecto_Final_DreamTeam#readme",
+  "directories": {
+    "test": "test"
+  },
   "description": ""
 }
