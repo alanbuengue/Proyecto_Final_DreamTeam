@@ -8,9 +8,6 @@ const { User, Plot, Crop, Ambient, Irrigation, Comment, Sensor } = require("./sr
 
 
 
-const { User, Plot, Crop, Ambient, Irrigation, Comment, Sensor } = require("./src/db/models");
-
-
 // accept json in post request
 app.use(express.json());
 
@@ -43,7 +40,7 @@ app.get('/iot/services',fiwareRouter);
 app.post('/iot/services',fiwareRouter);
 
 
-app.listen(80);
+
 
 //get city information
 app.get('/weather/:city', async function (req, res) {
@@ -572,3 +569,7 @@ app.put('/ambient/:id', async function (req, res) {
         res.status(500).json('No se pudo realizar la operacion');
     }
 })
+
+
+
+app.listen(80);
