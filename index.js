@@ -29,5 +29,4 @@ app.get('/iot/services',fiwareRouter);
 app.post('/iot/services',fiwareRouter);
 
 
-
-app.listen(5555);
+app.listen(80);
