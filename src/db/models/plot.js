@@ -20,12 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       Plot.hasMany(models.Irrigation, {
         foreignKey: 'idPlot'
       })
-      Plot.hasOne(models.Ambient, {
-        foreignKey: 'idAmbient'
-      })
-      Plot.hasMany(models.Sensor, {
-        foreignKey: 'idSensor'
-      })
     }
   }
   Plot.init({
