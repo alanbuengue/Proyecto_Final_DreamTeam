@@ -621,7 +621,7 @@ app.get('/comments/:idIrrigation', async function (req, res) {
 })
 app.post('/login', async function (req, res) {
 
-    const { , email, password } = req.body;
+    const { email, password } = req.body;
     console.log(req.body);
 
     try {
