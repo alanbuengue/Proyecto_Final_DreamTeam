@@ -570,6 +570,35 @@ app.put('/ambient/:id', async function (req, res) {
     }
 })
 
+app.get('/irrigations', async function (req, res) {
+    try {
+
+        let plotId = req.params.idPlot;
+        let irrigations;
+        if (plotId == null || plotId == undefined || plotId == '') {
+            return res.Status(400).json("Invalid IdPlot")
+        }
+        let myPlot = await Plot.findOne({
+            where : {id : plotId}
+        })
+        if(myPlot != null ){
+             irrigations = await myPlot.getIrrigations();
+        }
+
+        irrigations = await Plot.find({
+            where : {idPlot : plotId}
+        })
+
+        if(irrigations != null){
+            return res.status(201).json(irrigations);
+        }
+        if(irrigations = null){
+            return res.status(201).json("No irrigations found for the Plot Id")
+        }
+    } catch (err) {
+        res.status(500).json("Error")
+    }
+});
 
 
 app.listen(80);
