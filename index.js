@@ -570,7 +570,7 @@ app.put('/ambient/:id', async function (req, res) {
     }
 })
 
-app.get('/irrigations', async function (req, res) {
+app.get('/irrigations/:idPlot', async function (req, res) {
     try {
 
         let plotId = req.params.idPlot;
