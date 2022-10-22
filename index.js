@@ -592,13 +592,32 @@ app.get('/irrigations/:idPlot', async function (req, res) {
         if(irrigations != null){
             return res.status(201).json(irrigations);
         }
-        if(irrigations = null){
+        if(irrigations == null){
             return res.status(201).json("No irrigations found for the Plot Id")
         }
     } catch (err) {
         res.status(500).json("Error")
     }
-});
-
+})
+app.get('/comments/:idIrrigation', async function (req, res) {
+    try {
+        let irrigationId = req.params.idIrrigation;
+        let comments;
+        if(irrigationId == null || irrigationId == undefined || irrigationId == ''){
+            return res.Status(400).json("Invalid irrigationId")
+        }
+        comments = Comment.find({
+            where : {idIrrigation : irrigationId}
+        })
+        if(comments == null){
+            return res.status(201).json("No comments found for the Plot Id")
+        }
+        if(comments != null){
+            return res.status(201).json(comments)
+        }
+    } catch (err) {
+        res.status(500).json("Error")
+    }
+})
 
 app.listen(80);
