@@ -619,5 +619,28 @@ app.get('/comments/:idIrrigation', async function (req, res) {
         res.status(500).json("Error")
     }
 })
+app.post('/login', async function (req, res) {
+
+    const { , email, password } = req.body;
+    console.log(req.body);
+
+    try {
+        if (email == "" || password == "") {
+            res.status(401).json('Los valores no pueden ser nulos');
+        } else {
+            let auxUser = await User.findOne({
+                where: { email: email , password : password}
+            })
+
+            if (auxUser == null) {
+                res.status(201).json('Login incorrecto');
+            } else {
+                res.status(201).json(auxUser);
+            }
+        }
+    } catch (err) {
+        res.status(500).json('Fallo la en el login');
+    }
+})
 
 app.listen(80);
