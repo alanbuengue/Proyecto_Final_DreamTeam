@@ -657,4 +657,37 @@ app.post('/login', async function (req, res) {
     }
 })
 
+///**************************************************** */
+
+//Realizar el endpoint que retorne una parcela y su cultivo
+app.get('/plot/:id', async function(req,res) {
+    try{
+        const plotId = req.params.id;
+        const plot = await Plot.findByPk(plotId);
+
+        const cropId = plot.idCrop;
+
+        let crop = await Crop.findOne({
+            where: { id: cropId }
+        })
+
+        var data = {
+            tipocultivo: crop.cropType,
+            tempMinima: crop.minus_temp,
+            phMinimo: crop.minus_ph,
+            humedadMax: crop.max_humidity,
+            desc: plot.description,
+            idPlot: plot.id,
+            idCrop: crop.id,
+
+        };
+
+        return res.status(201).send(data).json;
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion: ' + err);
+    }
+
+})
+
+
 app.listen(80);

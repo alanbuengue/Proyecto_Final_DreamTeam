@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       Plot.hasMany(models.User, {
         foreignKey: 'idPlot'
       })
-      Plot.hasOne(models.Crop, {
+      Plot.belongsTo(models.Crop, {
         foreignKey: 'idCrop'
       })
       Plot.hasMany(models.Irrigation, {

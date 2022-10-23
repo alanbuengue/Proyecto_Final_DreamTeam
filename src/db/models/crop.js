@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Crop.belongsTo(models.Plot, {
+      Crop.hasOne(models.Plot, {
         foreignKey: 'idCrop'
       })
     }
