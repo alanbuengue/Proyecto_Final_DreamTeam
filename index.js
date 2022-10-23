@@ -583,6 +583,78 @@ app.put('/ambient/:id', async function (req, res) {
     }
 })
 
+app.get('/irrigations/:idPlot', async function (req, res) {
+    try {
+        console.log(req.params)
+        let idPlot = req.params.idPlot;
+        let irrigations;
+        if (idPlot == null || idPlot == undefined || idPlot == '') {
+            return res.Status(400).json("Invalid IdPlot")
+        }
+        /*let myPlot = await Plot.findOne({
+            where : {id : plotId}
+        })*/
+        /*if(myPlot != null ){
+             irrigations = await myPlot.getIrrigations();
+        }*/
 
+        irrigations = await Irrigation.findAll({
+            where : {idPlot : idPlot}
+        })
+        console.log(irrigations)
+        if(irrigations != null){
+            console.log("hhh"+ irrigations)
+            return res.status(201).json(irrigations);
+        }
+        if(irrigations == null){
+            return res.status(201).json("No irrigations found for the Plot Id")
+        }
+    } catch (err) {
+        res.status(400).json(err)
+    }
+})
+app.get('/comments/:idIrrigation', async function (req, res) {
+    try {
+        let idIrrigation = req.params.idIrrigation;
+        let comments;
+        if(idIrrigation == null || idIrrigation == undefined || idIrrigation == ''){
+            return res.status(400).json("Invalid irrigationId")
+        }
+        comments = await Comment.findAll({
+            where : {idIrrigation : idIrrigation}
+        })
+        if(comments == null){
+            return res.status(201).json("No comments found for the Plot Id")
+        }
+        if(comments != null){
+            return res.status(201).json(comments)
+        }
+    } catch (err) {
+        res.status(500).json("Error")
+    }
+})
+app.post('/login', async function (req, res) {
+
+    const { email, password } = req.body;
+    console.log(req.body);
+
+    try {
+        if (email == "" || password == "") {
+            res.status(401).json('Los valores no pueden ser nulos');
+        } else {
+            let auxUser = await User.findOne({
+                where: { email: email , password : password}
+            })
+
+            if (auxUser == null) {
+                res.status(201).json('Login incorrecto');
+            } else {
+                res.status(201).json(auxUser);
+            }
+        }
+    } catch (err) {
+        res.status(500).json('error 500 en login');
+    }
+})
 
 app.listen(80);
