@@ -572,42 +572,43 @@ app.put('/ambient/:id', async function (req, res) {
 
 app.get('/irrigations/:idPlot', async function (req, res) {
     try {
-
-        let plotId = req.params.idPlot;
+        console.log(req.params)
+        let idPlot = req.params.idPlot;
         let irrigations;
-        if (plotId == null || plotId == undefined || plotId == '') {
+        if (idPlot == null || idPlot == undefined || idPlot == '') {
             return res.Status(400).json("Invalid IdPlot")
         }
-        let myPlot = await Plot.findOne({
+        /*let myPlot = await Plot.findOne({
             where : {id : plotId}
-        })
-        if(myPlot != null ){
+        })*/
+        /*if(myPlot != null ){
              irrigations = await myPlot.getIrrigations();
-        }
+        }*/
 
-        irrigations = await Plot.find({
-            where : {idPlot : plotId}
+        irrigations = await Irrigation.findAll({
+            where : {idPlot : idPlot}
         })
-
+        console.log(irrigations)
         if(irrigations != null){
+            console.log("hhh"+ irrigations)
             return res.status(201).json(irrigations);
         }
         if(irrigations == null){
             return res.status(201).json("No irrigations found for the Plot Id")
         }
     } catch (err) {
-        res.status(500).json("Error")
+        res.status(400).json(err)
     }
 })
 app.get('/comments/:idIrrigation', async function (req, res) {
     try {
-        let irrigationId = req.params.idIrrigation;
+        let idIrrigation = req.params.idIrrigation;
         let comments;
-        if(irrigationId == null || irrigationId == undefined || irrigationId == ''){
-            return res.Status(400).json("Invalid irrigationId")
+        if(idIrrigation == null || idIrrigation == undefined || idIrrigation == ''){
+            return res.status(400).json("Invalid irrigationId")
         }
-        comments = Comment.find({
-            where : {idIrrigation : irrigationId}
+        comments = await Comment.findAll({
+            where : {idIrrigation : idIrrigation}
         })
         if(comments == null){
             return res.status(201).json("No comments found for the Plot Id")
@@ -639,7 +640,7 @@ app.post('/login', async function (req, res) {
             }
         }
     } catch (err) {
-        res.status(500).json('Fallo la en el login');
+        res.status(500).json('error 500 en login');
     }
 })
 

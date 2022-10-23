@@ -15,12 +15,6 @@ module.exports = {
       idCrop: {
         type: Sequelize.INTEGER
       },
-      idAmbient: {
-        type: Sequelize.INTEGER
-      },
-      idSensor: {
-        type: Sequelize.INTEGER
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

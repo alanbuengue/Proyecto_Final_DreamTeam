@@ -24,9 +24,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Plot.init({
     description: DataTypes.STRING,
-    idCrop: DataTypes.INTEGER,
-    idAmbient: DataTypes.INTEGER,
-    idSensor: DataTypes.INTEGER
+    idCrop: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Plot',
