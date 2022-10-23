@@ -160,6 +160,32 @@ app.put('/user', async function (req, res) {
     }
 })
 
+
+//Get users
+
+
+app.get('/users', async function(req,res) {
+    try{
+        const users = await User.findAll();
+        return res.status(201).send(users);
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+})
+
+app.get('/users/:id', async function(req,res) {
+    try{
+        const userId = req.params.id;
+        const user = await User.findByPk(userId);
+        return res.status(201).send(user);
+    }catch(err){
+        res.status(500).send('No se pudo realizar la operacion' + err);
+    }
+
+})
+
+
+
 //********************************************************************** */
 //ABM PLOT
 
