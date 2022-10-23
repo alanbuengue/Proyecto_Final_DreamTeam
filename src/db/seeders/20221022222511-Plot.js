@@ -8,7 +8,13 @@ module.exports = {
     idCrop: 1,
     createdAt: new Date,
     updatedAt: new Date
-    }], {});
+    },
+    {
+      description: 'Parcela 2 uwu',
+      idCrop: 2,
+      createdAt: new Date,
+      updatedAt: new Date
+      }], {});
     },
 
   async down (queryInterface, Sequelize) {

@@ -167,7 +167,7 @@ app.put('/user', async function (req, res) {
 app.get('/users', async function(req,res) {
     try{
         const users = await User.findAll();
-        return res.status(201).send(users);
+        return res.status(201).send(users).json;
     }catch(err){
         res.status(500).send('No se pudo realizar la operacion' + err);
     }
@@ -177,7 +177,7 @@ app.get('/users/:id', async function(req,res) {
     try{
         const userId = req.params.id;
         const user = await User.findByPk(userId);
-        return res.status(201).send(user);
+        return res.status(201).send(user).json;
     }catch(err){
         res.status(500).send('No se pudo realizar la operacion' + err);
     }

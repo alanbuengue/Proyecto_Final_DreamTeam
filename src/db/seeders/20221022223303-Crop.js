@@ -10,7 +10,15 @@ module.exports = {
     max_humidity: 3 ,
     createdAt: new Date,
     updatedAt: new Date
-    }], {});
+    },
+    {
+      cropType: "Tomate",
+      minus_temp: 2,
+      minus_ph: 4,
+      max_humidity: 5,
+      createdAt: new Date,
+      updatedAt: new Date
+      }], {});
     },
 
   async down (queryInterface, Sequelize) {

@@ -11,6 +11,15 @@ module.exports = {
       idPlot: 1 ,
     createdAt: new Date,
     updatedAt: new Date
+    },
+    {
+      name: "Alejo",
+      email: "alejo.curello@gmail.com",
+      password: "123456",
+      isAdmin: 0 ,
+      idPlot: 2 ,
+    createdAt: new Date,
+    updatedAt: new Date
     }], {});
     },
 
