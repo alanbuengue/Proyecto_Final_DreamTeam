@@ -239,16 +239,6 @@ app.post('/crop', async function (req, res) {
             res.status(401).json('Los valores no pueden ser nulos');
         } else {
 
-
-            //REVISAR ROMPE ACÁ, TRAE ID CROP DE LA NADA
-            //Busco que no exista ya el cultivo
-            let auxCrop = await Crop.findOne({
-                where: { cropType: cropType }
-            })
-            
-
-            if (auxCrop == null) {
-
                 await Crop.create({
                     cropType: cropType,
                     minus_temp: minus_temp,
@@ -256,10 +246,7 @@ app.post('/crop', async function (req, res) {
                     max_humidity: max_humidity,
                 })
                 res.status(201).json('Cultivo creado!');
-               } else {
-                res.status(401).json('Ya existe el cultivo');
             }
-        }
     } catch (err) {
         res.status(500).json('Fallo la creacion del cultivo.');
     }
