@@ -43,23 +43,23 @@ describe('Orion Tests', function () {
             url: 'http://localhost/orion/entities',
             
             data: {
-                "id": "urn:ngsi-ld:Device:919",
-                "type": "MyNewType",
-                "description": {
-                    "value": "My entity description",
-                    "type": "Text",
+                'id': 'urn:ngsi-ld:Device:919',
+                'type': 'MyNewType',
+                'description': {
+                    'value': 'My entity description',
+                    'type': 'Text',
                 },
-                "temperature": {
-                    "type": "float",
-                    "value": "99.0"
+                'temperature': {
+                    'type': 'float',
+                    'value': '99.0'
                 },
-                "humidity": {
-                    "type": "float",
-                    "value": "99.0"
+                'humidity': {
+                    'type': 'float',
+                    'value': '99.0'
                 },
-                "acidity": {
-                    "type": "float",
-                    "value": "99.0"
+                'acidity': {
+                    'type': 'float',
+                    'value': '99.0'
                 }    
             }
         }).then(res => {
@@ -88,6 +88,8 @@ describe('Orion Tests', function () {
         });
     });
 
+    // IOT DEVICE TESTS
+    
     // get iot info
     it('Should Get Iot Info', function (done) {
         axios({
@@ -102,11 +104,51 @@ describe('Orion Tests', function () {
         });
     });
 
-    // get iot services
-    it('Should Get Iot Services', function (done) {
+
+    // Create iot service
+    it ('Should Create A IOT Service', function (done) {
+        axios({
+            method: 'post',
+            url: 'http://localhost/iot/services',
+            data: {
+                'services': [
+                    {
+                      'apikey': 'test1234',
+                        'cbroker': 'http://46.17.108.45:1026',
+                        'entity_type': 'Ambiente',
+                        'resource': '/iot/json',
+                    }],
+                'method': 'post',
+                'configUrl': 'http://46.17.108.45:4041/iot/services',
+                'entityType': 'Ambiente',
+                'resource': '/iot/json',
+                'headers': { 
+                    'Fiware-Service': 'testService3', 
+                    'Fiware-ServicePath': '/', 
+                    'Content-Type': 'application/json'
+                }
+            }
+        
+        }).then(res => {
+            assert.equal(res.status,201);
+            done();
+        }).catch(err => {
+            done(err);
+        });
+    });        
+
+    // get iot service
+    it('Should Get Iot Created Service', function (done) {
         axios({
             method: 'get',
             url: 'http://localhost/iot/services',
+            data: {
+                'headers': { 
+                    'Fiware-Service': 'testService3', 
+                    'Fiware-ServicePath': '/', 
+                    'Content-Type': 'application/json'
+                }
+            }
         }).then(res => {
             assert.equal(res.status,200);
             // console.log(res.data);
@@ -116,6 +158,5 @@ describe('Orion Tests', function () {
         });
     });
 
-    
-    
+
 });

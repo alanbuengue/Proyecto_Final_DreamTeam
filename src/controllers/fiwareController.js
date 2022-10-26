@@ -219,17 +219,18 @@ exports.sendSensorData = async function (req, res) {
 // Get IOT Services from a type 
 exports.getIotServices = async function (req, res) {
     
+    let { headers } = req.body;
+    
+    if(!headers) {
+        return res.status(400).send({error: "Missing parameters"});
+    }
+    
     let orionUrl = 'http://' + SERVER_IP + ':' + IOTA_SERVICE_PORT + '/iot/services';
-    let iotService = "sensor";
-    let servicePath = "/";
-
+    
     let config = {
         method: 'get',
         url: orionUrl,
-        headers: { 
-            'Fiware-Service': iotService, 
-            'Fiware-ServicePath': servicePath, 
-          },
+        headers: headers,
         timeout:2000
     };
 
@@ -245,42 +246,29 @@ exports.getIotServices = async function (req, res) {
 
 exports.createIotService = async function(req,res) {
 
-    // service name should come from req.body
+    
     // a service needs an api key to restrict access
+    let { services, method, configUrl, headers } = req.body;
 
-    let SERVICE_NAME   = 'test';
-    let CBROKER_URL    = 'http://' + SERVER_IP + ':' + ORION_PORT;
-    let IOT_CONFIG_URL = 'http://' + SERVER_IP + ':' + IOTA_SERVICE_PORT+ "/iot/services";
-    let ENTITY_TYPE    = 'Ambiente';
-    let SERVICE_PATH   = '/';
-    let NEW_API_KEY    = '555ppp'; 
-
-    let data = JSON.stringify({
-        "services": [
-            {
-            "apikey": NEW_API_KEY,
-            "cbroker": CBROKER_URL,
-            "entity_type": ENTITY_TYPE,
-            "resource": "/iot/json"
-            }
-        ]
-    });
+    if(!services || !method || !configUrl || !headers) {
+        return res.status(400).send({error: "Missing parameters"});
+    }
+    
+    let data = {
+        services
+    };
 
     let config = {
-        method: 'post',
-        url: IOT_CONFIG_URL,
-        headers: { 
-            'Fiware-Service': SERVICE_NAME, 
-            'Fiware-ServicePath': SERVICE_PATH, 
-            'Content-Type': 'application/json'
-        },
+        method: method,
+        url: configUrl,
+        headers: headers,
         timeout: 3000,
         data : data
     };
 
     try {
         let response = await axios(config);
-        return res.status(201).send(response.data);
+        return res.status(201).send('Service Created: ' + response.data);
     } catch (err) {
         
         return res.send(err);
