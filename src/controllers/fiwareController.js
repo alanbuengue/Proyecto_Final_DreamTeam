@@ -61,9 +61,6 @@ exports.createOrionEntity = async function(req,res) {
          return res.status(400).send({error: "Missing parameters"});
     }
     
-    // let service = "sensor";
-    // let servicePath = "/";
-    
     let data = {
         "id":   id,
         "type": type,
@@ -77,9 +74,6 @@ exports.createOrionEntity = async function(req,res) {
         method: 'post',
         url: 'http://'+ SERVER_IP +':'+ ORION_PORT +'/v2/entities',
         headers: { 
-            // 'Fiware-Service': service, 
-            // 'Fiware-ServicePath': servicePath, 
-            // 'X-Auth-Token': API_KEY, 
             'Content-Type': 'application/json',
             'Connection': 'keep-alive'
         },
@@ -101,8 +95,7 @@ exports.createOrionEntity = async function(req,res) {
 exports.deleteEntity = async function(req,res) {
     
     let { id } = req.body;
-    console.log("el id es esta " + id);
-
+    
     if(!id) {
         return res.status(400).send({error: "Missing parameters"});
     }
@@ -246,7 +239,6 @@ exports.getIotServices = async function (req, res) {
 
 exports.createIotService = async function(req,res) {
 
-    
     // a service needs an api key to restrict access
     let { services, method, configUrl, headers } = req.body;
 
