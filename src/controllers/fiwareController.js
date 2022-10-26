@@ -1,5 +1,6 @@
 const axios = require('axios');
 
+
 const SERVER_IP  = '46.17.108.45';
 const ORION_PORT = '1026';
 const API_KEY    = 'asd12345';
@@ -49,57 +50,35 @@ exports.getOrionEntities = async function (req, res) {
     }
 };
 
-// create Orion Entity
+// create Orion Ambiente Entity
 exports.createOrionEntity = async function(req,res) {
 
     // params must come from req.body
 
-    let eName = "new_entity_2";
-    let eId   = "new:002";
-    let eType  = "Ambiente";
-    let eDescription = "A new entity for y purpose";
+   let { id, type, description, temperature, humidity, acidity } = req.body;
 
-    let service = "sensor";
-    let ServicePath = "/";
+   if(!id || !type || !description || !temperature || !humidity || !acidity) {
+         return res.status(400).send({error: "Missing parameters"});
+    }
     
-    let data = JSON.stringify({
-        "id":   eId,
-        "type": eType,
-        "description": {
-            "value": eDescription,
-            "type":  "Text"
-        },
-        // ENTITY VALUES _ Structure
-        "online": {
-            "value": true,
-            "type": "Boolean"
-        },
-        "temperature": {
-            "value": 24,
-            "type": "Number"
-        },
-        "humidity": {
-            "value": 56,
-            "type": "Number"
-        },
-        "pressure": {
-            "value": 1,
-            "type": "Number"
-        },
-        
-    });
+    let data = {
+        "id":   id,
+        "type": type,
+        "description": description,
+        "temperature": temperature,
+        "humidity": humidity,
+        "accidity": acidity
+    };
 
     let config = {
         method: 'post',
         url: 'http://'+ SERVER_IP +':'+ ORION_PORT +'/v2/entities',
         headers: { 
-            'Fiware-Service': service, 
-            'Fiware-ServicePath': ServicePath, 
-            'X-Auth-Token': API_KEY, 
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Connection': 'keep-alive'
         },
-            timeout: 2000,
-            data : data
+        timeout: 2000,
+        data : data
     };
 
     try {
@@ -115,26 +94,22 @@ exports.createOrionEntity = async function(req,res) {
 // Delete Orion Entity
 exports.deleteEntity = async function(req,res) {
     
-    // entity data
-    // let entityId = req.body.entityId;
-    let service     = "sensor";
-    let servicePath = "/";
-    let entityId    = "new:002";
+    let { id } = req.body;
+    
+    if(!id) {
+        return res.status(400).send({error: "Missing parameters"});
+    }
 
     let config = {
         method: 'delete',
-        url: 'http://'+ SERVER_IP +':'+ ORION_PORT +'/v2/entities/' + entityId,
-        headers: { 
-            'Fiware-Service': service, 
-            'Fiware-ServicePath': servicePath, 
-            'X-Auth-Token': API_KEY
-        },
+        url: 'http://'+ SERVER_IP +':'+ ORION_PORT +'/v2/entities/' + id,
+        headers: {},
         timeout: 2000,
     };
 
     try {
         let response = await axios(config);
-        return res.status(201).send(response.data);
+        return res.status(204).send(response.data);
     } catch (err) {
         console.log(err)
         return res.send(err);
@@ -237,17 +212,18 @@ exports.sendSensorData = async function (req, res) {
 // Get IOT Services from a type 
 exports.getIotServices = async function (req, res) {
     
+    let { headers } = req.body;
+    
+    if(!headers) {
+        return res.status(400).send({error: "Missing parameters"});
+    }
+    
     let orionUrl = 'http://' + SERVER_IP + ':' + IOTA_SERVICE_PORT + '/iot/services';
-    let iotService = "sensor";
-    let servicePath = "/";
-
+    
     let config = {
         method: 'get',
         url: orionUrl,
-        headers: { 
-            'Fiware-Service': iotService, 
-            'Fiware-ServicePath': servicePath, 
-          },
+        headers: headers,
         timeout:2000
     };
 
@@ -263,42 +239,28 @@ exports.getIotServices = async function (req, res) {
 
 exports.createIotService = async function(req,res) {
 
-    // service name should come from req.body
     // a service needs an api key to restrict access
+    let { services, method, configUrl, headers } = req.body;
 
-    let SERVICE_NAME   = 'test';
-    let CBROKER_URL    = 'http://' + SERVER_IP + ':' + ORION_PORT;
-    let IOT_CONFIG_URL = 'http://' + SERVER_IP + ':' + IOTA_SERVICE_PORT+ "/iot/services";
-    let ENTITY_TYPE    = 'Ambiente';
-    let SERVICE_PATH   = '/';
-    let NEW_API_KEY    = '555ppp'; 
-
-    let data = JSON.stringify({
-        "services": [
-            {
-            "apikey": NEW_API_KEY,
-            "cbroker": CBROKER_URL,
-            "entity_type": ENTITY_TYPE,
-            "resource": "/iot/json"
-            }
-        ]
-    });
+    if(!services || !method || !configUrl || !headers) {
+        return res.status(400).send({error: "Missing parameters"});
+    }
+    
+    let data = {
+        services
+    };
 
     let config = {
-        method: 'post',
-        url: IOT_CONFIG_URL,
-        headers: { 
-            'Fiware-Service': SERVICE_NAME, 
-            'Fiware-ServicePath': SERVICE_PATH, 
-            'Content-Type': 'application/json'
-        },
+        method: method,
+        url: configUrl,
+        headers: headers,
         timeout: 3000,
         data : data
     };
 
     try {
         let response = await axios(config);
-        return res.status(201).send(response.data);
+        return res.status(201).send('Service Created: ' + response.data);
     } catch (err) {
         
         return res.send(err);
