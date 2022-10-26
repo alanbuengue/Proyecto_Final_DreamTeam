@@ -35,6 +35,58 @@ describe('Orion Tests', function () {
         });
     });
 
+    // post ambiente entity
+    it('Should Create Orion Ambiente Entity', function (done) {
+        
+        axios({
+            method: 'post',
+            url: 'http://localhost/orion/entities',
+            
+            data: {
+                "id": "urn:ngsi-ld:Device:919",
+                "type": "MyNewType",
+                "description": {
+                    "value": "My entity description",
+                    "type": "Text",
+                },
+                "temperature": {
+                    "type": "float",
+                    "value": "99.0"
+                },
+                "humidity": {
+                    "type": "float",
+                    "value": "99.0"
+                },
+                "acidity": {
+                    "type": "float",
+                    "value": "99.0"
+                }    
+            }
+        }).then(res => {
+            assert.equal(res.status,201);
+            done();
+        }).catch(err => {
+            console.log(err);
+            done(err);
+        });
+    });
+
+
+    // delete entity
+    it('Should Delete Orion Entity', function (done) {
+        axios({
+            method: 'delete',
+            url: 'http://localhost/orion/entities',
+            data: {
+                'id': 'urn:ngsi-ld:Device:919',
+            }
+        }).then(res => {
+            assert.equal(res.status,204);
+            done();
+        }).catch(err => {
+            done(err);
+        });
+    });
 
     // get iot info
     it('Should Get Iot Info', function (done) {
