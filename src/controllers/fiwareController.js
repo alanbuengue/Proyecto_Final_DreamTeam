@@ -122,12 +122,6 @@ exports.deleteEntity = async function(req,res) {
 
 exports.getSensorData = async function(req, res) {
     
-    // these should come from req.body / req.params
-    // let ENTITY_ID = 'ambiente:001';
-    // let ENTITY_TYPE = 'Ambiente';
-    // let FIWARE_SERVICE = 'sensor';
-    // let SERVICE_PATH = '/';
-
     let { entityId, entityType, headers } = req.body;
 
     if(!entityId || !entityType || !headers) {
