@@ -123,31 +123,34 @@ exports.deleteEntity = async function(req,res) {
 exports.getSensorData = async function(req, res) {
     
     // these should come from req.body / req.params
-    let ENTITY_ID = 'ambiente:001';
-    let ENTITY_TYPE = 'Ambiente';
-    let FIWARE_SERVICE = 'sensor';
-    let SERVICE_PATH = '/';
+    // let ENTITY_ID = 'ambiente:001';
+    // let ENTITY_TYPE = 'Ambiente';
+    // let FIWARE_SERVICE = 'sensor';
+    // let SERVICE_PATH = '/';
 
-    let iotUrlGet = 'http://' + SERVER_IP + ':' + ORION_PORT + '/v2/entities/' + ENTITY_ID;
+    let { entityId, entityType, headers } = req.body;
+
+    if(!entityId || !entityType || !headers) {
+        return res.status(400).send({ error: "Missing parameters" });
+    }
+
+    console.log(req.body)
+
+    let iotUrlGet = 'http://' + SERVER_IP + ':' + ORION_PORT + '/v2/entities/' + entityId;
 
     var config = {
         method: 'get',
         url: iotUrlGet,
-        headers: {
-            Accept: '*/*',
-            Connection: 'keep-alive',
-            'Fiware-Service': FIWARE_SERVICE,
-            'Fiware-ServicePath': SERVICE_PATH
-        },
+        headers: headers,
         params: {
-            type: ENTITY_TYPE
+            type: entityType
         },
         timeout: 3000
     };
 
     try {
         let response = await axios(config);
-        return res.status(201).send(response.data);
+        return res.status(200).send(response.data);
     } catch (err) {
         return res.send(err);
     }
@@ -158,44 +161,35 @@ exports.getSensorData = async function(req, res) {
 // Sends Info to IOT Device as a Sensor Would
 
 exports.sendSensorData = async function (req, res) {
-    // must come from req.body
-    let IOT_DEVICE_ID = 'ambiente-sensor:001';
-    let FIWARE_SERVICE = 'sensor';
-    let SERVICE_PATH = '/';
+    
+    let { device_id, temperature, humidity, acidity, headers } = req.body;
+
+    if(!device_id || !temperature || !humidity || !acidity || !headers) {
+        return res.status(400).send({error: "Missing parameters"});
+    }
 
     let iotUrlPost = 'http://' + SERVER_IP + ':' + IOTA_PORT + '/iot/json';
-
-    // sensor data should be randomly generated
-
-    let temp = '18';
-    let hum = '22.2';
-    let aci = '7.3';
-
+    
     // sends a string
     var data = JSON.stringify([
         {
-            te: temp
+            te: temperature
         },
         {
-            hu: hum
+            hu: humidity
         },
         {
-            ac: aci
+            ac: acidity
         }
     ]);
 
     var config = {
         method: 'post',
         url: iotUrlPost,
-        headers: {
-            'Fiware-Service': FIWARE_SERVICE,
-            'Fiware-ServicePath': SERVICE_PATH,
-            'X-Auth-Token': API_KEY,
-            'Content-Type': 'application/json'
-        },
+        headers: headers,
         params: {
             k: API_KEY,
-            i: IOT_DEVICE_ID
+            i: device_id
         },
         data: data
     };

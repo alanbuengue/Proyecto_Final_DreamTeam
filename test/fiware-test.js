@@ -95,8 +95,16 @@ describe('Orion Tests', function () {
         axios({
             method: 'get',
             url: 'http://localhost/iot',
+            data: {
+                'entityId': 'ambiente:001',
+                'entityType': 'ambiente',
+                'headers': {
+                    'Fiware-Service': 'sensor',
+                    'Fiware-Servicepath': '/'
+                }
+            }
         }).then(res => {
-            assert.equal(res.status,201);
+            assert.equal(res.status,200);
             // console.log(res.data);
             done();
         }).catch(err => {
@@ -158,5 +166,57 @@ describe('Orion Tests', function () {
         });
     });
 
+
+    // SENSOR DATA TESTS
+
+    // get sensor data
+    it('Should Get Sensor Data', function (done) {
+        axios({
+            method: 'get',
+            url: 'http://localhost/iot',
+            data: {
+                'headers': {
+                    'Accept': '*/*',
+                    'Connection': 'keep-alive',
+                    'Fiware-Service': 'sensor',
+                    'Fiware-ServicePath': '/',
+                },
+                'entityId': 'ambiente:001',
+                'entityType': 'Ambiente',
+            },
+        }).then(res => {
+            assert.equal(res.status,201);
+            // console.log(res.data);
+            done();
+        }).catch(err => {
+            done(err);
+        });
+    });
+
+    // send sensor data
+    it('Should Send Sensor Data', function (done) {
+        axios({
+            method: 'post',
+            url: 'http://localhost/iot',
+            data: {
+                'device_id': 'ambiente-sensor:001',
+                'temperature': '23.0',
+                'humidity': '24.0',
+                'acidity': '7.0',
+                'headers': { 
+                    'Fiware-Service': 'sensor', 
+                    'Fiware-ServicePath': '/',
+                    'X-Auth-Token': 'asd12345',
+                    'Content-Type': 'application/json'
+                }
+            }
+        }).then(res => {
+            assert.equal(res.status,201);
+            // console.log(res.data);
+            done();
+        }).catch(err => {
+            done(err);
+        });
+    });
 
 });
