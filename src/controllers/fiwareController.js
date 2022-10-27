@@ -128,8 +128,6 @@ exports.getSensorData = async function(req, res) {
         return res.status(400).send({ error: "Missing parameters" });
     }
 
-    console.log(req.body)
-
     let iotUrlGet = 'http://' + SERVER_IP + ':' + ORION_PORT + '/v2/entities/' + entityId;
 
     var config = {
@@ -262,65 +260,37 @@ exports.createIotService = async function(req,res) {
 // Creates a IOT Device for a given service
 
 exports.createIotDevice = async function(req,res) {
+    
+    let {
+        devices, headers
+    } = req.body;
+
+    device_id   = devices.device_id;
+    entity_name = devices.entity_name;
+    entity_type = devices.entity_type;
+    timezone    = devices.timezone;
+    attributes  = devices.attributes;
+    static_attributes = devices.static_attributes;
+    
+
+    if(!device_id || !entity_name || !entity_type || !timezone || !attributes || !static_attributes || !headers || !devices) {
+        return res.status(400).send({error: "Missing parameters"});
+    }
+
+    console.log(req.body);
 
     // Create IoT Agent
     // The device_id will later receive info. from a sensor / put request
 
-    let IOT_DEVICE_ID   = "ambiente-sensor:002";
-    let IOT_ENTITY_NAME = "ambiente:002";
-    let ENTITY_TYPE     = "Ambiente";
-
-    let SERVICE_NAME = "test";
-    let SERVICE_PATH = "/";
-    let NEW_API_KEY  = "555ppp";
-
-    let entity_atributes = [
-        {
-            "object_id": "ac",
-            "name": "acidity",
-            "type": "Float"
-        },
-        {
-            "object_id": "hu",
-            "name": "humidity",
-            "type": "Float"
-        },
-        {
-            "object_id": "te",
-            "name": "temperature",
-            "type": "Float"
-        }
-    ];
 
     let data = JSON.stringify({
-        "devices": [
-        {
-            "device_id": IOT_DEVICE_ID,
-            "entity_name": IOT_ENTITY_NAME,
-            "entity_type": ENTITY_TYPE,
-            "timezone": "America/Buenos_Aires",
-            "attributes": entity_atributes,
-            "static_attributes": [
-            {
-                "name": "refStore",
-                "type": "Relationship",
-                // VER ESTO STORE NUEVO?
-                "value": "urn:ngsi-ld:Store:001"
-            }
-            ]
-        }
-        ]
+        "devices": devices
     });
     
     let config = {
         method: 'post',
         url: 'http://' + SERVER_IP + ':' + IOTA_SERVICE_PORT + '/iot/devices',
-        headers: { 
-            'Fiware-Service': SERVICE_NAME, 
-            'Fiware-ServicePath': SERVICE_PATH, 
-            'X-Auth-Token': NEW_API_KEY, 
-            'Content-Type': 'application/json'
-            },
+        headers: headers,
         timeout: 3000,
         data : data
     };
@@ -329,7 +299,8 @@ exports.createIotDevice = async function(req,res) {
         let response = await axios(config);
         return res.status(201).send(response.data);
     } catch (err) {
+        console.log(err)
         return res.send(err);
     }
-
-}
+    
+}   

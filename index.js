@@ -39,6 +39,9 @@ app.get('/iot/services',fiwareRouter);
 // create a IoT service
 app.post('/iot/services',fiwareRouter);
 
+// create a IoT device / sensor
+app.post('/iot/devices',fiwareRouter);
+
 
 
 

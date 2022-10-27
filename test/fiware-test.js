@@ -28,7 +28,6 @@ describe('Orion Tests', function () {
             url: 'http://localhost/orion/entities',
         }).then(res => {
             assert.equal(res.status,200);
-            // console.log(res.data);
             done();
         }).catch(err => {
             done(err);
@@ -66,7 +65,6 @@ describe('Orion Tests', function () {
             assert.equal(res.status,201);
             done();
         }).catch(err => {
-            console.log(err);
             done(err);
         });
     });
@@ -105,7 +103,6 @@ describe('Orion Tests', function () {
             }
         }).then(res => {
             assert.equal(res.status,200);
-            // console.log(res.data);
             done();
         }).catch(err => {
             done(err);
@@ -159,7 +156,6 @@ describe('Orion Tests', function () {
             }
         }).then(res => {
             assert.equal(res.status,200);
-            // console.log(res.data);
             done();
         }).catch(err => {
             done(err);
@@ -185,8 +181,7 @@ describe('Orion Tests', function () {
                 'entityType': 'Ambiente',
             },
         }).then(res => {
-            assert.equal(res.status,201);
-            // console.log(res.data);
+            assert.equal(res.status,200);
             done();
         }).catch(err => {
             done(err);
@@ -212,11 +207,66 @@ describe('Orion Tests', function () {
             }
         }).then(res => {
             assert.equal(res.status,201);
-            // console.log(res.data);
             done();
         }).catch(err => {
             done(err);
         });
     });
+
+    // create sensor device
+    it('Should Create A Sensor Device', function (done) {
+        axios({
+            method: 'post',
+            url: 'http://localhost/iot/devices',
+            
+            data: {
+                'devices': {
+                        'device_id': 'ambiente-sensor:007',
+                        'entity_name': 'ambiente:007',
+                        'entity_type': 'Ambiente',
+                        'timezone': 'America/Buenos_Aires',
+                        'attributes': [
+                            {
+                                'object_id': 'temperature',
+                                'name': 'temperature',
+                                'type': 'Float'
+                            },
+                            {
+                                'object_id': 'humidity',
+                                'name': 'humidity',
+                                'type': 'Float'
+                            },
+                            {
+                                'object_id': 'acidity',
+                                'name': 'acidity',
+                                'type': 'Float'
+                            }
+                        ],
+                        'static_attributes': [
+                            {
+                                'name': 'refStore',
+                                'type': 'Relationship',
+                                'value': 'urn:ngsi-ld:Store:001'
+                            }
+                        ]
+                },
+                'headers': {
+                    'Fiware-Service': 'sensor',
+                    'Fiware-ServicePath': '/',
+                    'X-Auth-Token': '666ppp', 
+                    'Content-Type': 'application/json'
+                }
+            }
+        
+            
+        }).then(res => {
+            assert.equal(res.status,201);
+            console.log(res.data)
+            done();
+        }).catch(err => {
+            done(err);
+        });
+    });
+    
 
 });

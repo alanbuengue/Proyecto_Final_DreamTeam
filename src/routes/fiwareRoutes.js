@@ -16,4 +16,6 @@ router.get('/iot', fiwareController.getSensorData);
 router.get('/iot/services',fiwareController.getIotServices);
 router.post('/iot/services',fiwareController.createIotService);
 
+router.post('/iot/devices',fiwareController.createIotDevice);
+
 module.exports = router;
