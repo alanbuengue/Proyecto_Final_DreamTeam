@@ -34,7 +34,7 @@ describe('Orion Tests', function () {
         });
     });
 
-    post ambiente entity
+    // post ambiente entity
     it('Should Create Orion Ambiente Entity', function (done) {
         
         axios({
