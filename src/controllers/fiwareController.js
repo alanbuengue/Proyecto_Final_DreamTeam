@@ -122,9 +122,9 @@ exports.deleteEntity = async function(req,res) {
 
 exports.getSensorData = async function(req, res) {
     
-    let { entityId, entityType, headers } = req.body;
+    let { entityId, headers } = req.body;
 
-    if(!entityId || !entityType || !headers) {
+    if(!entityId  || !headers) {
         return res.status(400).send({ error: "Missing parameters" });
     }
 
@@ -134,9 +134,6 @@ exports.getSensorData = async function(req, res) {
         method: 'get',
         url: iotUrlGet,
         headers: headers,
-        params: {
-            type: entityType
-        },
         timeout: 3000
     };
 
