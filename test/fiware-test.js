@@ -93,13 +93,11 @@ describe('Orion Tests', function () {
         axios({
             method: 'get',
             url: 'http://localhost/iot',
-            data: {
+            // should be query params
+            params: {
                 'entityId': 'ambiente:001',
-                'entityType': 'ambiente',
-                'headers': {
-                    'Fiware-Service': 'sensor',
-                    'Fiware-Servicepath': '/'
-                }
+                'serviceHeader': 'sensor',
+                'servicePathHeader': '/',
             }
         }).then(res => {
             console.log(res.data)

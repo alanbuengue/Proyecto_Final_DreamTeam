@@ -122,9 +122,9 @@ exports.deleteEntity = async function(req,res) {
 
 exports.getSensorData = async function(req, res) {
     
-    let { entityId, headers } = req.body;
+    let { entityId, serviceHeader, servicePathHeader } = req.query;
 
-    if(!entityId  || !headers) {
+    if(!entityId || !serviceHeader || !servicePathHeader) {
         return res.status(400).send({ error: "Missing parameters" });
     }
 
@@ -133,7 +133,10 @@ exports.getSensorData = async function(req, res) {
     var config = {
         method: 'get',
         url: iotUrlGet,
-        headers: headers,
+        headers: {
+            "Fiware-Service": serviceHeader,
+            "Fiware-Servicepath": servicePathHeader
+        },
         timeout: 3000
     };
 
