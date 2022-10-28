@@ -663,9 +663,16 @@ app.post('/login', async function (req, res) {
 ///**************************************************** */
 
 //Realizar el endpoint que retorne una parcela y su cultivo
-app.get('/plot/:id', async function(req,res) {
+app.get('/plot/:plotId', async function(req,res) {
     try{
-        const plotId = req.params.id;
+        
+        const plotId = req.params.plotId;
+        
+        if(!plotId){
+            return res.status(400).json("Invalid plotId")
+        }
+
+        //const plotId = req.query.plotId;
         const plot = await Plot.findByPk(plotId);
 
         const cropId = plot.idCrop;

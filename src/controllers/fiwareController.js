@@ -111,7 +111,6 @@ exports.deleteEntity = async function(req,res) {
         let response = await axios(config);
         return res.status(204).send(response.data);
     } catch (err) {
-        console.log(err)
         return res.send(err);
     }
 };
@@ -277,8 +276,6 @@ exports.createIotDevice = async function(req,res) {
         return res.status(400).send({error: "Missing parameters"});
     }
 
-    console.log(req.body);
-
     // Create IoT Agent
     // The device_id will later receive info. from a sensor / put request
 
@@ -299,7 +296,7 @@ exports.createIotDevice = async function(req,res) {
         let response = await axios(config);
         return res.status(201).send(response.data);
     } catch (err) {
-        console.log(err)
+        
         return res.send(err);
     }
     
