@@ -95,7 +95,7 @@ getCity("manchester")
 const getWeather = async (id) => {
 
     const base = "http://dataservice.accuweather.com/currentconditions/v1/";
-    const query = `${id}?apikey=${key}`
+    const query = `${id}?apikey=${key}&language=${'es-mx'}&details=${'true'}`
 
     const response = await fetch(base + query);
     const data = await response.json();
@@ -697,6 +697,42 @@ app.get('/plot/:plotId', async function(req,res) {
         res.status(500).send('No se pudo realizar la operacion: ' + err);
     }
 
+})
+
+
+//WEATHER INFO FOR ANDROID
+
+app.get('/weatherInfo/:city', async function (req, res) {
+
+    try {
+
+        let city = req.params.city;
+
+        const promise1 = new Promise((resolve, reject) => {
+            resolve(getCity(city).then(data => { //A PARTIR DEL .THEN ES PARA TRAER LA INFO DEL CLIMA. SIN ESO TRAE LA INFO DE LA CIUDAD
+                return getWeather(data.Key); //LE PASO LA KEY DE LA CIUDAD PARA TRAER EL CLIMA
+            }));
+        });
+
+        promise1.then((value) => {
+            //console.log(value);
+
+            var result = {
+                UltimaMedicion: value.LocalObservationDateTime,
+                CondicionClimatica: value.WeatherText,
+                EstaLloviendo: value.HasPrecipitation,
+                DescripcionLluvia: value.PrecipitationType,
+                Temperatura: value.Temperature.Metric.Value,
+                Ubicacion: city,
+            };
+
+            res.status(201).json(result)
+
+        });
+
+    } catch (err) {
+        res.status(500).json("Error")
+    }
 })
 
 
