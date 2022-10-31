@@ -715,15 +715,31 @@ app.get('/weatherInfo/:city', async function (req, res) {
         });
 
         promise1.then((value) => {
-            //console.log(value);
+            console.log(value);
+
+            let rain_desc = value.PrecipitationType;
+            
+            if(rain_desc == null) {
+                rain_desc = "Sin Lluvia"
+            }
+
+            let time = value.LocalObservationDateTime.split("T");
+            let date = time[0].split("-");
+            let timeLong = time[1].split("-");
+            let timeShort = timeLong[0]
+            
+            if(city == "buenosaires") {
+                city = "Buenos Aires";
+            }
 
             var result = {
-                UltimaMedicion: value.LocalObservationDateTime,
-                CondicionClimatica: value.WeatherText,
-                EstaLloviendo: value.HasPrecipitation,
-                DescripcionLluvia: value.PrecipitationType,
-                Temperatura: value.Temperature.Metric.Value,
-                Ubicacion: city,
+                atmospheric_contition: value.WeatherText,
+                humidity: value.RelativeHumidity,
+                location: city,
+                rain_desc: rain_desc,
+                raining: value.HasPrecipitation,
+                temperature: value.Temperature.Metric.Value,
+                time: timeShort,
             };
 
             res.status(201).json(result)
