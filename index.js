@@ -849,8 +849,10 @@ const irrigationAll = async () => {
                     }
                    console.log(crop)
                    console.log(uniqPlot)
-            
-                    if (auxCrop.minus_temp < data2.tempActual)
+                    
+                    if (auxCrop.minus_temp < data2.tempActual){
+
+                    }
             
                     if (auxCrop.cropType == 'Soja') {
             
