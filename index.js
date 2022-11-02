@@ -7,6 +7,7 @@ app.use(express.urlencoded({ extended: true }));
 const { User, Plot, Crop, Ambient, Irrigation, Comment, Sensor } = require("./src/db/models");
 
 
+const PORT = process.env.PORT;
 
 // accept json in post request
 app.use(express.json());
