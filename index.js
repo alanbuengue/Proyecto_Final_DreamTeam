@@ -792,7 +792,6 @@ const irrigationAll = async () => {
     const plots = await Plot.findAll();
     let plotsCity = plots[0].city //Agarro el plot 0 y pregunto por su ciudad
 
-
     let crops = [];
     
     for ( const uniqPlot of plots) {
@@ -838,16 +837,22 @@ const irrigationAll = async () => {
            // .then ((data2, value) => {
     
                 for ( const uniqPlot of plots) {
-
-                    while (i < crops.size) {
-                        
+                    let i = 0;
+                    let auxCrop;
+                    let encontro = false;
+                    while (i < crops.size || !encontro) {
+                        if(crops[i].id === uniqPlot.idCrop){
+                            auxCrop = crops[i];
+                            encontro = true;
+                        }
+                        i++;
                     }
                    console.log(crop)
                    console.log(uniqPlot)
             
-                    if (crop.minus_temp < data2.tempActual)
+                    if (auxCrop.minus_temp < data2.tempActual)
             
-                    if (crop.cropType == 'Soja') {
+                    if (auxCrop.cropType == 'Soja') {
             
                     }      
                 }         
