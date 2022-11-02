@@ -9,6 +9,10 @@ const { User, Plot, Crop, Ambient, Irrigation, Comment, Sensor } = require("./sr
 
 const PORT = process.env.PORT;
 
+app.listen(PORT, () => {
+    console.log(`server running on port ${PORT}`);
+});
+
 // accept json in post request
 app.use(express.json());
 
@@ -701,4 +705,4 @@ app.get('/plot/:plotId', async function(req,res) {
 })
 
 
-app.listen(80);
+//app.listen(80);
