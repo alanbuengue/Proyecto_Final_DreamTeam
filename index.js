@@ -25,6 +25,7 @@ app.get('/', function (req, res) {
 
 // Orion - Get Version
 const fiwareRouter = require("./src/routes/fiwareRoutes");
+const crop = require('./src/db/models/crop');
 app.get('/orion', fiwareRouter);
 app.get('/orion/entities', fiwareRouter);
 app.post('/orion/entities', fiwareRouter);
@@ -750,6 +751,126 @@ app.get('/weatherInfo/:city', async function (req, res) {
         res.status(500).json("Error")
     }
 })
+
+//***************************** */
+//REGAR O NO REGAR, ESA ES LA CUESTION
+
+app.get('/irrigation', async function (req, res) {
+/*
+    const promise1 = new Promise((resolve, reject) => {
+        resolve(getIotMethod());
+    });*/
+
+    const promise1 = new Promise((resolve, reject) => {
+        resolve(irrigationAll());
+    });
+
+    /*
+    promise1.then((value) => {
+
+
+        const humidity = value.humidity.value
+        res.status(201).json(humidity)
+
+    });
+    */
+
+    res.status(201).json("true")
+
+
+})
+
+
+
+
+
+
+
+
+const irrigationAll = async () => {
+
+    const plots = await Plot.findAll();
+    let plotsCity = plots[0].city //Agarro el plot 0 y pregunto por su ciudad
+
+
+    let crops = [];
+    
+    for ( const uniqPlot of plots) {
+        
+        const auxCrop = await Crop.findOne({
+            where: { id: uniqPlot.idCrop }
+        })
+
+        crops.push(auxCrop);
+
+    }
+
+    
+    //Traigo la humedad del clima actual
+    const climePromise = new Promise((resolve, reject) => {
+            resolve(getCity(plotsCity).then(data => { //A PARTIR DEL .THEN ES PARA TRAER LA INFO DEL CLIMA. SIN ESO TRAE LA INFO DE LA CIUDAD
+                return getWeather(data.Key); //LE PASO LA KEY DE LA CIUDAD PARA TRAER EL CLIMA
+            }));
+        });
+        
+        
+
+    climePromise.then((value) => {
+        let data = {
+            humidityClima: value.RelativeHumidity,
+            rain_desc: value.HasPrecipitation,
+            temperature: value.Temperature.Metric.Value,
+        }
+
+        console.log(data) //funciona hasta acá
+
+        sensorPromise = new Promise((resolve, reject) => {
+            resolve(getIotMethod());
+        })
+
+        sensorPromise.then((value) => {
+
+            return humiditySensor = value.humidity.value
+        })
+        
+        .then ((data2)=> {
+            
+           // .then ((data2, value) => {
+    
+                for ( const uniqPlot of plots) {
+
+                    while (i < crops.size) {
+                        
+                    }
+                   console.log(crop)
+                   console.log(uniqPlot)
+            
+                    if (crop.minus_temp < data2.tempActual)
+            
+                    if (crop.cropType == 'Soja') {
+            
+                    }      
+                }         
+            })
+        }
+      
+    )
+        
+    }
+
+
+
+
+async function getIotMethod() {
+
+    const base = "http://localhost/iot?entityId=ambiente:001&serviceHeader=sensor&servicePathHeader=/";
+
+    const response = await fetch(base);
+    const data = await response.json();
+
+    return data;
+}
+
 
 
 app.listen(80);
