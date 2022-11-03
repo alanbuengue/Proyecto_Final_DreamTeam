@@ -816,7 +816,7 @@ const irrigationAll = async () => {
 
     climePromise.then((value) => {
         let data = {
-            humidityClima: value.RelativeHumidity,
+            humidityClima: value.RelativeHumidity, //No use
             rain_desc: value.HasPrecipitation,
             temperature: value.Temperature.Metric.Value,
         }
@@ -847,16 +847,35 @@ const irrigationAll = async () => {
                         }
                         i++;
                     }
-                   console.log(crop)
-                   console.log(uniqPlot)
+                  // console.log(crop)
+                  // console.log(uniqPlot)
                     
-                    if (auxCrop.minus_temp < data2.tempActual){
+                   //Si hace mas de 6º en el ambiente = True
+                    if (auxCrop.minus_temp < data.temperature){
+                        
+                        //Si no llueve = True
+                        if (!data.rain_desc) {
+                    
+                            //Si la humedad minima de la planta es mayor que la captada = True
+                            if (auxCrop.min_humidity > humiditySensor) {
 
+                                //Si llegamos hasta acá hay que regar!!
+                                console.log("HAY QUE REGAR " + uniqPlot.id)
+
+                                water = ((auxCrop.max_humidity - humiditySensor) * 100)
+
+                                Irrigation.create({
+                                    waterUsed: water,
+                                    idPlot: uniqPlot.id,
+                                })
+
+                            }
+
+                         }      
+                        
                     }
-            
-                    if (auxCrop.cropType == 'Soja') {
-            
-                    }      
+
+                    console.log("Vuelta del for each")
                 }         
             })
         }
