@@ -879,5 +879,55 @@ async function getIotMethod() {
 }
 
 
+//************************************ */
+//COMMENTS IRRIGATION
+
+app.get('/comment/:id', async function (req, res) {
+
+    let id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+    try {
+        let comment = await Comment.findOne({
+            where: { id: id }
+        })
+        if (comment != null) {
+            res.status(201).json(comment);
+        } else {
+            res.status(401).json('El comentario con Id ' + id + " no existe.");
+        }
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
+app.get('/irrigation/:id/comments', async function (req, res) {
+
+    const id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('El id no puede ser nulo');
+    }
+
+    try {
+        
+        await Irrigation.findOne({
+            where: { id: id } 
+        }).then(async irrigation => {
+            const comments = await Comment.findAll({
+                where: { idIrrigation: irrigation.id }
+            });
+            res.status(201).json(comments);
+        });
+        
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
+
 
 app.listen(80);
