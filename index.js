@@ -948,5 +948,28 @@ app.get('/irrigation/:id/comments', async function (req, res) {
 });
 
 
+app.delete('/comment/:id', async function (req, res) {
+
+    let id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+    try {
+        let comment = await Comment.findOne({
+            where: { id: id }
+        })
+        if (comment != null) {
+            await comment.destroy()
+            res.status(201).json('Comentario ' + id + ' eliminado');
+        } else {
+            res.status(401).json('El comentario con Id ' + id + " no existe.");
+        }
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
 
 app.listen(80);
