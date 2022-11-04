@@ -1025,9 +1025,15 @@ app.post('/user/login', async function(req,res) {
             return res.status(400).send(data).json;
         }
 
+
+        let plot = await Plot.findOne({
+            where: { id: user.idPlot }
+        })
+
         data = {
             idUser: user.id,
-            idPlot: user.idPlot
+            idPlot: user.idPlot,
+            city: plot.city
         }
 
 
