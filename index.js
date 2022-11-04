@@ -1008,4 +1008,46 @@ app.delete('/user/:id', async function (req, res) {
 });
 
 
+
+// login with email and password
+app.post('/user/login', async function(req,res) {
+    const { email, password } = req.body;
+    try {
+        const user = await User.findOne({ where: { email, password }})
+
+        if( user == null) {
+
+            data = {
+                idUser:0,
+                idPlot:0
+            }
+
+            return res.status(400).send(data).json;
+        }
+
+        data = {
+            idUser: user.id,
+            idPlot: user.idPlot
+        }
+
+
+        res.status(201).send(data).json;
+
+        } catch (error) {
+            res.status(500).send();
+        }
+})
+
+app.post('/user/logout', async function(req,res) {
+
+    data = {
+        idUser:0,
+        idPlot:0
+    }
+
+    res.status(201).send(data).json;
+})
+
+
+
 app.listen(80);
