@@ -948,6 +948,8 @@ app.get('/irrigation/:id/comments', async function (req, res) {
 });
 
 
+//DELETE COMMENT BY ID
+
 app.delete('/comment/:id', async function (req, res) {
 
     let id = req.params.id;
@@ -969,6 +971,40 @@ app.delete('/comment/:id', async function (req, res) {
     } catch (err) {
         res.status(500).json('No se pudo realizar la operacion');
     }
+});
+
+
+//DELETE USER AND PLOT
+app.delete('/user/:id', async function (req, res) {
+
+    let id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+/*     try { */
+        let user = await User.findOne({
+            where: { id: id }
+        })
+        
+        if (user != null ) {
+            
+            let plot = await Plot.findOne({
+                where: { id: user.idPlot }
+            })
+
+            let idParcela = user.idPlot
+
+            user.destroy()
+            plot.destroy()
+            res.status(201).json('Usuario ' + id + ' y parcela ' + idParcela + ' eliminado');
+        } else {
+            res.status(401).json('El usuario con Id ' + id + " no existe.");
+        }
+/*      } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }  */
 });
 
 
