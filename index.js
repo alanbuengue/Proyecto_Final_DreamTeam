@@ -406,18 +406,18 @@ app.post('/comment', async function (req, res) {
 
 app.put('/comment/:id', async function (req, res) {
 
-    const { idIrrigation, text } = req.body;
     let id = req.params.id;
-
+    const text  = req.query.comment;
+    
+    if(!text || text == "" || !id || id == ""){
+        res.status(401).json('Los valores no pueden ser nulos');
+    }
+    
     try {
         let auxComment = await Comment.findOne({
             where: { id: id }
         })
         if (auxComment != null) {
-
-            if (idIrrigation != "") {
-                auxComment.idIrrigation = idIrrigation;
-            }
 
             if (text != "") {
                 auxComment.text = text;
@@ -432,7 +432,7 @@ app.put('/comment/:id', async function (req, res) {
     } catch (err) {
         res.status(500).json('No se pudo realizar la operacion');
     }
-})
+});
 
 
 //********************************************************************** */
@@ -589,7 +589,7 @@ app.put('/ambient/:id', async function (req, res) {
 
 app.get('/irrigations/:idPlot', async function (req, res) {
     try {
-        console.log(req.params)
+        // console.log(req.params)
         let idPlot = req.params.idPlot;
         let irrigations;
         if (idPlot == null || idPlot == undefined || idPlot == '') {
@@ -605,9 +605,9 @@ app.get('/irrigations/:idPlot', async function (req, res) {
         irrigations = await Irrigation.findAll({
             where : {idPlot : idPlot}
         })
-        console.log(irrigations)
+        // console.log(irrigations)
         if(irrigations != null){
-            console.log("hhh"+ irrigations)
+            // console.log("hhh"+ irrigations)
             return res.status(201).json(irrigations);
         }
         if(irrigations == null){
@@ -781,6 +781,51 @@ app.get('/irrigation', async function (req, res) {
 })
 
 
+app.get('/comment/:id', async function (req, res) {
+
+    let id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+    try {
+        let comment = await Comment.findOne({
+            where: { id: id }
+        })
+        if (comment != null) {
+            res.status(201).json(comment);
+        } else {
+            res.status(401).json('El comentario con Id ' + id + " no existe.");
+        }
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
+app.get('/irrigation/:id/comments', async function (req, res) {
+
+    const id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('El id no puede ser nulo');
+    }
+
+    try {
+        
+        await Irrigation.findOne({
+            where: { id: id } 
+        }).then(async irrigation => {
+            const comments = await Comment.findAll({
+                where: { idIrrigation: irrigation.id }
+            });
+            res.status(201).json(comments);
+        });
+        
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
 
 
 
