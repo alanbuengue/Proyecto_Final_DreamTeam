@@ -18,6 +18,9 @@ module.exports = {
       minus_ph: {
         type: Sequelize.FLOAT
       },
+      min_humidity: {
+        type: Sequelize.FLOAT
+      },
       max_humidity: {
         type: Sequelize.FLOAT
       },

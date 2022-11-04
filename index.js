@@ -861,7 +861,7 @@ const irrigationAll = async () => {
 
     climePromise.then((value) => {
         let data = {
-            humidityClima: value.RelativeHumidity,
+            humidityClima: value.RelativeHumidity, //No use
             rain_desc: value.HasPrecipitation,
             temperature: value.Temperature.Metric.Value,
         }
@@ -892,14 +892,35 @@ const irrigationAll = async () => {
                         }
                         i++;
                     }
-                   console.log(crop)
-                   console.log(uniqPlot)
-            
-                    if (auxCrop.minus_temp < data2.tempActual)
-            
-                    if (auxCrop.cropType == 'Soja') {
-            
-                    }      
+                  // console.log(crop)
+                  // console.log(uniqPlot)
+                    
+                   //Si hace mas de 6º en el ambiente = True
+                    if (auxCrop.minus_temp < data.temperature){
+                        
+                        //Si no llueve = True
+                        if (!data.rain_desc) {
+                    
+                            //Si la humedad minima de la planta es mayor que la captada = True
+                            if (auxCrop.min_humidity > humiditySensor) {
+
+                                //Si llegamos hasta acá hay que regar!!
+                                console.log("HAY QUE REGAR " + uniqPlot.id)
+
+                                water = ((auxCrop.max_humidity - humiditySensor) * 100)
+
+                                Irrigation.create({
+                                    waterUsed: water,
+                                    idPlot: uniqPlot.id,
+                                })
+
+                            }
+
+                         }      
+                        
+                    }
+
+                    console.log("Vuelta del for each")
                 }         
             })
         }
@@ -920,6 +941,163 @@ async function getIotMethod() {
 
     return data;
 }
+
+
+//************************************ */
+//COMMENTS IRRIGATION
+
+app.get('/comment/:id', async function (req, res) {
+
+    let id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+    try {
+        let comment = await Comment.findOne({
+            where: { id: id }
+        })
+        if (comment != null) {
+            res.status(201).json(comment);
+        } else {
+            res.status(401).json('El comentario con Id ' + id + " no existe.");
+        }
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
+app.get('/irrigation/:id/comments', async function (req, res) {
+
+    const id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('El id no puede ser nulo');
+    }
+
+    try {
+        
+        await Irrigation.findOne({
+            where: { id: id } 
+        }).then(async irrigation => {
+            const comments = await Comment.findAll({
+                where: { idIrrigation: irrigation.id }
+            });
+            res.status(201).json(comments);
+        });
+        
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
+
+//DELETE COMMENT BY ID
+
+app.delete('/comment/:id', async function (req, res) {
+
+    let id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+    try {
+        let comment = await Comment.findOne({
+            where: { id: id }
+        })
+        if (comment != null) {
+            await comment.destroy()
+            res.status(201).json('Comentario ' + id + ' eliminado');
+        } else {
+            res.status(401).json('El comentario con Id ' + id + " no existe.");
+        }
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
+
+//DELETE USER AND PLOT
+app.delete('/user/:id', async function (req, res) {
+
+    let id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+/*     try { */
+        let user = await User.findOne({
+            where: { id: id }
+        })
+        
+        if (user != null ) {
+            
+            let plot = await Plot.findOne({
+                where: { id: user.idPlot }
+            })
+
+            let idParcela = user.idPlot
+
+            user.destroy()
+            plot.destroy()
+            res.status(201).json('Usuario ' + id + ' y parcela ' + idParcela + ' eliminado');
+        } else {
+            res.status(401).json('El usuario con Id ' + id + " no existe.");
+        }
+/*      } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }  */
+});
+
+
+
+// login with email and password
+app.post('/user/login', async function(req,res) {
+    const { email, password } = req.body;
+    try {
+        const user = await User.findOne({ where: { email, password }})
+
+        if( user == null) {
+
+            data = {
+                idUser:0,
+                idPlot:0
+            }
+
+            return res.status(400).send(data).json;
+        }
+
+
+        let plot = await Plot.findOne({
+            where: { id: user.idPlot }
+        })
+
+        data = {
+            idUser: user.id,
+            idPlot: user.idPlot,
+            city: plot.city
+        }
+
+
+        res.status(201).send(data).json;
+
+        } catch (error) {
+            res.status(500).send();
+        }
+})
+
+app.post('/user/logout', async function(req,res) {
+
+    data = {
+        idUser:0,
+        idPlot:0
+    }
+
+    res.status(201).send(data).json;
+})
 
 
 
