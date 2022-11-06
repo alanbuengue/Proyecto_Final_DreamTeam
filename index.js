@@ -1054,6 +1054,77 @@ app.post('/user/logout', async function(req,res) {
     res.status(201).send(data).json;
 })
 
+app.delete('/user/delete', async function (req, res) {
+
+    let idUsuario = req.params.idUsuario;
+    let idPlot = req.params.idPlot;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+    try {
+        if(idUsuario != null && idPlot != null){
+            let usuario = await User.findOne({
+                where : {id : idUsuario}
+            })
+            let plot = await Plot.findOne({
+                where : {id : idPlot}
+            })
+            if(usuario != null && plot != null){
+                await usuario.destroy();
+                await plot.destroy();
+                res.status(200).json('El usuario y el plot se eliminaron correctamente')
+            }else{
+                res.status(401).json('No se encontre ningun usuario/Plot con el id enviado')
+            }
+        } else{
+            res.status(401).json('Id Usuario o idPlot incorrecto');
+        }
+    } catch (err) {
+        res.status(500).json('fallo la baja de usuario y plot');
+    }
+});
+
+app.post('/user/plot', async function (req, res) {
+
+    const { name, email, password,isAdmin,plotCity,plotDescription,idCrop } = req.body;
+
+    try {
+
+        if (name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || idCrop == "") {
+            res.status(401).json('Los valores no pueden ser nulos');
+        } else {
+
+            //Busco que no exista ya el email
+            let auxUser = await User.findOne({
+                where: { email: email }
+            })
+            console.log(auxUser)
+
+            if (auxUser == null) {
+                const plotCreated = await Plot.create({
+                    description : plotDescription,
+                    idCrop : idCrop,
+                    city : plotCity
+                })
+                await User.create({
+                    name: name,
+                    email: email,
+                    password: password,
+                    isAdmin: false,
+                    idPlot: plotCreated.id
+                })
+                res.status(201).json('Usuario y plot creado!');
+            } else {
+                res.status(401).json('Ya existe ese email');
+            }
+        }
+    } catch (err) {
+        res.status(500).json('Fallo la creacion del usuario.');
+    }
+})
+
 
 
 app.listen(80);
