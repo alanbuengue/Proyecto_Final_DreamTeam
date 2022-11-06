@@ -1209,7 +1209,15 @@ app.put('/user/plot', async function (req, res) {
         res.status(500).json('Fallo la modificacion del usuario.');
     }
 })
+app.get('/user/crop', async function (req, res) {
 
+    try {
+        const crops = await Crop.findAll();
+        res.status(200).json(crops)
+    } catch (err) {
+        res.status(500).json("Error")
+    }
+})
 
 
 app.listen(80);
