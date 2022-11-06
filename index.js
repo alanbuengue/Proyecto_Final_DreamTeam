@@ -385,7 +385,7 @@ app.put('/Irrigation/:id', async function (req, res) {
 
 app.post('/comment', async function (req, res) {
 
-    const { idIrrigation, text } = req.body;
+    const { idIrrigation, text } = req.query;
 
     try {
 
@@ -408,16 +408,20 @@ app.put('/comment/:id', async function (req, res) {
 
     let id = req.params.id;
     const text  = req.query.comment;
-    
+
     if(!text || text == "" || !id || id == ""){
         res.status(401).json('Los valores no pueden ser nulos');
     }
-    
+
     try {
         let auxComment = await Comment.findOne({
             where: { id: id }
         })
         if (auxComment != null) {
+
+            if (idIrrigation != "") {
+                auxComment.idIrrigation = idIrrigation;
+            }
 
             if (text != "") {
                 auxComment.text = text;
@@ -637,7 +641,7 @@ app.get('/comments/:idIrrigation', async function (req, res) {
         res.status(500).json("Error")
     }
 })
-app.post('/login', async function (req, res) {
+/*app.post('/login', async function (req, res) {
 
     const { email, password } = req.body;
     console.log(req.body);
@@ -659,7 +663,7 @@ app.post('/login', async function (req, res) {
     } catch (err) {
         res.status(500).json('error 500 en login');
     }
-})
+})*/
 
 ///**************************************************** */
 
@@ -968,7 +972,7 @@ app.get('/comment/:id', async function (req, res) {
     }
 });
 
-app.get('/irrigation/:id/comments', async function (req, res) {
+/*app.get('/irrigation/:id/comments', async function (req, res) {
 
     const id = req.params.id;
     
@@ -990,7 +994,7 @@ app.get('/irrigation/:id/comments', async function (req, res) {
     } catch (err) {
         res.status(500).json('No se pudo realizar la operacion');
     }
-});
+});*/
 
 
 //DELETE COMMENT BY ID
@@ -1023,12 +1027,12 @@ app.delete('/comment/:id', async function (req, res) {
 app.delete('/user/:id', async function (req, res) {
 
     let id = req.params.id;
+
     
     if(!id) {
         res.status(401).json('Id incorrecto');
     }
-
-/*     try { */
+    try { 
         let user = await User.findOne({
             where: { id: id }
         })
@@ -1047,57 +1051,172 @@ app.delete('/user/:id', async function (req, res) {
         } else {
             res.status(401).json('El usuario con Id ' + id + " no existe.");
         }
-/*      } catch (err) {
+     } catch (err) {
         res.status(500).json('No se pudo realizar la operacion');
-    }  */
+    }  
 });
 
 
 
 // login with email and password
 app.post('/user/login', async function(req,res) {
-    const { email, password } = req.body;
+    const { email, password } = req.query;
     try {
-        const user = await User.findOne({ where: { email, password }})
+        if (email == "" || password == "") {
+            res.status(401).json('Los valores no pueden ser nulos');
+        }else{
+            const user = await User.findOne({ where: { email, password }})
+            if( user == null) {
 
-        if( user == null) {
-
-            data = {
-                idUser:0,
-                idPlot:0
+                data = {
+                    idUser:0,
+                    idPlot:0,
+                    city : '',
+                    isAdmin : false
+                }
+    
+                return res.status(201).send(data).json;
+            }else{
+                let plot = await Plot.findOne({
+                    where: { id: user.idPlot }
+                })
+                data = {
+                    idUser: user.id,
+                    idPlot: user.idPlot,
+                    city: plot.city,
+                    isAdmin: user.isAdmin
+                }
+                res.status(201).send(data).json;
             }
-
-            return res.status(400).send(data).json;
         }
-
-
-        let plot = await Plot.findOne({
-            where: { id: user.idPlot }
-        })
-
-        data = {
-            idUser: user.id,
-            idPlot: user.idPlot,
-            city: plot.city
-        }
-
-
-        res.status(201).send(data).json;
+        
 
         } catch (error) {
             res.status(500).send();
         }
 })
+/*app.delete('/user/delete', async function (req, res) {
 
-app.post('/user/logout', async function(req,res) {
-
-    data = {
-        idUser:0,
-        idPlot:0
+    let idUsuario = req.params.idUsuario;
+    let idPlot = req.params.idPlot;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
     }
 
-    res.status(201).send(data).json;
+    try {
+        if(idUsuario != null && idPlot != null){
+            let usuario = await User.findOne({
+                where : {id : idUsuario}
+            })
+            let plot = await Plot.findOne({
+                where : {id : idPlot}
+            })
+            if(usuario != null && plot != null){
+                await usuario.destroy();
+                await plot.destroy();
+                res.status(200).json('El usuario y el plot se eliminaron correctamente')
+            }else{
+                res.status(401).json('No se encontre ningun usuario/Plot con el id enviado')
+            }
+        } else{
+            res.status(401).json('Id Usuario o idPlot incorrecto');
+        }
+    } catch (err) {
+        res.status(500).json('fallo la baja de usuario y plot');
+    }
+});*/
+
+app.post('/user/plot', async function (req, res) {
+
+    const { name, email, password,isAdmin,plotCity,plotDescription,idCrop } = req.query;
+
+    try {
+
+        if (name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || idCrop == "") {
+            res.status(401).json('Los valores no pueden ser nulos');
+        } else {
+
+            //Busco que no exista ya el email
+            let auxUser = await User.findOne({
+                where: { email: email }
+            })
+            console.log(auxUser)
+
+            if (auxUser == null) {
+                const plotCreated = Plot.create({
+                    description : plotDescription,
+                    idCrop : idCrop,
+                    city : plotCity
+                })
+                plotCreated.then((values) =>{
+                     User.create({
+                        name: name,
+                        email: email,
+                        password: password,
+                        isAdmin: isAdmin,
+                        idPlot: values.id
+                    })
+                    res.status(201).json('Usuario y plot creado!');
+                })
+            } else {
+                res.status(401).json('Ya existe ese email');
+            }
+        }
+    } catch (err) {
+        res.status(500).json('Fallo la creacion del usuario.');
+    }
 })
+
+app.get('/stats', async function (req, res) {
+
+  
+    try {
+        let trigo = 0;
+        let soja = 0;
+        let maiz = 0;
+        let amountOfPlots = 0;
+        let response = [];
+        let amountOfIrrigations = 0;
+        const plots = await Plot.findAll();
+        
+        if(plots != null){
+            for await (const p of plots) {
+                amountOfPlots++;
+                const irrigations = await Irrigation.findAll({
+                    where : {idPlot :p.id}
+                })
+                for await(const i of irrigations){
+                    amountOfIrrigations++;
+                }
+                let auxCrop = await Crop.findOne({
+                    where : {id : p.idCrop}
+                })
+                
+                    if(auxCrop.cropType === "Trigo"){
+                        trigo++;
+                    }else if(auxCrop.cropType === "Maiz"){
+                        maiz++;
+                    }else if(auxCrop.cropType === "Soja"){
+                        soja++;
+                    }
+                    console.log('maiz', maiz);
+                    console.log('soja', soja);  
+                    console.log('trigo', trigo);
+            }
+            stringPlot = {"cantplots" : amountOfPlots,
+                            "cantSoja" : soja,
+                            "cantTrigo" : trigo,
+                            "cantMaiz" : maiz,
+                            "cantRiegosRealizados" : amountOfIrrigations};
+            res.status(201).json(stringPlot)
+        }else{
+            res.status(400).json('No se encontraron parcelas')
+        }
+    } catch (err) {
+       res.status(500).json('No se pudo realizar la operacion');
+    }
+});
 
 
 
