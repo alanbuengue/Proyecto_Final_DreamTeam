@@ -4,7 +4,7 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 
 
-const { User, Plot, Crop, Ambient, Irrigation, Comment, Sensor } = require("./src/db/models");
+const { User, Plot, Crop, Irrigation, Comment } = require("./src/db/models");
 
 
 
@@ -109,61 +109,6 @@ const getWeather = async (id) => {
 //********************************************************************** */
 //ABM USERS
 
-app.post('/user', async function (req, res) {
-
-    const { name, email, password } = req.body;
-    console.log(req.body);
-
-    try {
-
-        if (name == "" || email == "" || password == "") {
-            res.status(401).json('Los valores no pueden ser nulos');
-        } else {
-
-            //Busco que no exista ya el email
-            let auxUser = await User.findOne({
-                where: { email: email }
-            })
-            console.log(auxUser)
-
-            if (auxUser == null) {
-
-                await User.create({
-                    name: name,
-                    email: email,
-                    password: password,
-                    isAdmin: false,
-                    idPlot: 0
-                })
-                res.status(201).json('Usuario creado!');
-            } else {
-                res.status(401).json('Ya existe ese email');
-            }
-        }
-    } catch (err) {
-        res.status(500).json('Fallo la creacion del usuario.');
-    }
-})
-
-app.put('/user', async function (req, res) {
-
-    const { email, idPlot } = req.body;
-
-    try {
-        let auxUser = await User.findOne({
-            where: { email: email }
-        })
-        if (auxUser != null) {
-            auxUser.idPlot = idPlot;
-            await auxUser.save();
-            res.status(201).json('El usuario ' + email + " asigno la parcela: " + idPlot);
-        } else {
-            res.status(401).json('El email no existe');
-        }
-    } catch (err) {
-        res.status(500).json('No se pudo realizar la operacion');
-    }
-})
 
 
 //Get users
@@ -195,67 +140,6 @@ app.get('/users/:id', async function(req,res) {
 //ABM PLOT
 
 
-app.post('/plot', async function (req, res) {
-
-    const { description, idCrop, idAmbient, idSensor } = req.body;
-    console.log(req.body);
-
-    try {
-
-        if (description == "" || idCrop == "" || idAmbient == "" || idSensor == "") {
-            res.status(401).json('Los valores no pueden ser nulos');
-        } else {
-
-            await Plot.create({
-                description: description,
-                idCrop: idCrop,
-                idAmbient: idAmbient,
-                idSensor: idSensor,
-            })
-            res.status(201).json('Parcela creado!');
-        }
-    } catch (err) {
-        res.status(500).json('Fallo la creacion de la parcela.');
-    }
-})
-
-app.put('/plot/:id', async function (req, res) {
-
-    const { description, idCrop, idAmbient, idSensor } = req.body;
-    let id = req.params.id;
-
-    try {
-        let auxPlot = await Plot.findOne({
-            where: { id: id }
-        })
-        if (auxPlot != null) {
-
-            if (description != "") {
-                auxPlot.description = description;
-            }
-
-            if (idCrop != "") {
-                auxPlot.idCrop = idCrop;
-            }
-
-            if (idAmbient != "") {
-                auxPlot.idAmbient = idAmbient;
-            }
-
-            if (idSensor != "") {
-                auxPlot.idSensor = idSensor;
-            }
-
-            await auxPlot.save();
-            res.status(201).json('Se registró los cambios de la parcela: ' + id);
-
-        } else {
-            res.status(401).json('La parcela ' + id + " no existe.");
-        }
-    } catch (err) {
-        res.status(500).json('No se pudo realizar la operacion');
-    }
-})
 
 //********************************************************************** */
 //ABM USERS
@@ -440,153 +324,10 @@ app.put('/comment/:id', async function (req, res) {
 //ABM sensor
 
 
-app.post('/sensor', async function (req, res) {
-
-    const {description, fiware_update_url, ph_measured, ac_measured,
-        hu_measured, fiware_id  } = req.body;
-
-
-    try {
-
-        if (description == "" || fiware_update_url == "" || ph_measured == "" 
-            || ac_measured == "" || hu_measured == "" || fiware_id == "" ) {
-
-            res.status(401).json('Los valores no pueden ser nulos');
-        } else {
-
-            await Sensor.create({
-                status: false,
-                description: description,
-                fiware_update_url: fiware_update_url,
-                ph_measured: ph_measured,
-                ac_measured: ac_measured,
-                hu_measured: hu_measured,
-                fiware_id: fiware_id
-            })
-            res.status(201).json('Sensor creado!');
-        }
-    } catch (err) {
-        res.status(500).json('Fallo la creacion del sensor.');
-    }
-})
-
-app.put('/sensor/:id', async function (req, res) {
-
-    const {status, description, fiware_update_url, ph_measured, ac_measured,
-        hu_measured, fiware_id  } = req.body;
-    let id = req.params.id;
-
-    try {
-        let auxSensor = await Sensor.findOne({
-            where: { id: id }
-        })
-        if (auxSensor != null) {
-
-            if (status != "") {
-                auxSensor.status = status;
-            }
-
-            if (description != "") {
-                auxSensor.description = description;
-            }
-            if (fiware_update_url != "") {
-                auxSensor.fiware_update_url = fiware_update_url;
-            }
-
-            if (ph_measured != "") {
-                auxSensor.ph_measured = ph_measured;
-            }
-            if (ac_measured != "") {
-                auxSensor.ac_measured = ac_measured;
-            }
-
-            if (hu_measured != "") {
-                auxSensor.hu_measured = hu_measured;
-            }
-            if (fiware_id != "") {
-                auxSensor.fiware_id = fiware_id;
-            }
-
-            await auxSensor.save();
-            res.status(201).json('Se registró los cambios del sensor ' + id);
-
-        } else {
-            res.status(401).json('El sensor con Id ' + id + " no existe.");
-        }
-    } catch (err) {
-        res.status(500).json('No se pudo realizar la operacion');
-    }
-})
-
 
 //********************************************************************** */
 //ABM AMBIENT
 
-
-app.post('/ambient', async function (req, res) {
-
-    const { temp, land_humidity, land_ph, latitude, longitude } = req.body;
-
-    try {
-
-        if (temp == "" || land_humidity == "" || land_ph == "" || latitude == ""
-        || longitude == "") {
-            res.status(401).json('Los valores no pueden ser nulos');
-        } else {
-
-            await Ambient.create({
-                temp: temp,
-                land_humidity: land_humidity,
-                land_ph: land_ph,
-                latitude: latitude,
-                longitude: longitude
-            })
-            res.status(201).json('Ambiente creado!');
-        }
-    } catch (err) {
-        res.status(500).json('Fallo la creacion del ambiente.');
-    }
-})
-
-app.put('/ambient/:id', async function (req, res) {
-
-    const { temp, land_humidity, land_ph, latitude, longitude } = req.body;
-    let id = req.params.id;
-
-    try {
-        let auxAmbient = await Ambient.findOne({
-            where: { id: id }
-        })
-        if (auxAmbient != null) {
-
-            if (temp != "") {
-                auxAmbient.temp = temp;
-            }
-
-            if (land_humidity != "") {
-                auxAmbient.land_humidity = land_humidity;
-            }
-            if (land_ph != "") {
-                auxAmbient.land_ph = land_ph;
-            }
-
-            if (latitude != "") {
-                auxAmbient.latitude = latitude;
-            }
-            if (longitude != "") {
-                auxAmbient.longitude = longitude;
-            }
-
-            await auxAmbient.save();
-            res.status(201).json('Se registró los cambios del ambiente ' + id);
-
-        } else {
-            res.status(401).json('El ambiente con Id ' + id + " no existe.");
-        }
-    } catch (err) {
-        res.status(500).json('No se pudo realizar la operacion');
-    }
-})
 
 app.get('/irrigations/:idPlot', async function (req, res) {
     try {
@@ -638,30 +379,6 @@ app.get('/comments/:idIrrigation', async function (req, res) {
         res.status(500).json("Error")
     }
 })
-/*app.post('/login', async function (req, res) {
-
-    const { email, password } = req.body;
-    console.log(req.body);
-
-    try {
-        if (email == "" || password == "") {
-            res.status(401).json('Los valores no pueden ser nulos');
-        } else {
-            let auxUser = await User.findOne({
-                where: { email: email , password : password}
-            })
-
-            if (auxUser == null) {
-                res.status(201).json('Login incorrecto');
-            } else {
-                res.status(201).json(auxUser);
-            }
-        }
-    } catch (err) {
-        res.status(500).json('error 500 en login');
-    }
-})*/
-
 ///**************************************************** */
 
 //Realizar el endpoint que retorne una parcela y su cultivo
