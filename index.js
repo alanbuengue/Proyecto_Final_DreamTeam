@@ -1132,39 +1132,40 @@ app.get('/stats', async function (req, res) {
         const plots = await Plot.findAll();
         
         if(plots != null){
-            amountOfPlots++;
-            console.log(amountOfPlots);
-            for ( const p of plots) {
+            for await (const p of plots) {
+                amountOfPlots++;
                 const irrigations = await Irrigation.findAll({
                     where : {idPlot :p.id}
                 })
-                for(const i of irrigations){
+                for await(const i of irrigations){
                     amountOfIrrigations++;
-                    console.log(amountOfIrrigations);
                 }
                 let auxCrop = await Crop.findOne({
                     where : {id : p.idCrop}
                 })
-                console.log(auxCrop);
-                if(auxCrop.cropType === "Trigo"){
-                    trigo++;
-                }else if(auxCrop.cropType === "Maiz"){
-                    maiz++;
-                }else if(auxCrop.cropType === "Soja"){
-                    soja++;
-                }
+                
+                    if(auxCrop.cropType === "Trigo"){
+                        trigo++;
+                    }else if(auxCrop.cropType === "Maiz"){
+                        maiz++;
+                    }else if(auxCrop.cropType === "Soja"){
+                        soja++;
+                    }
+                    console.log('maiz', maiz);
+                    console.log('soja', soja);  
+                    console.log('trigo', trigo);
             }
-            response.put("trigo",trigo);
-            response.put("soja",soja);
-            response.put("maiz",maiz);
-            response.put("cantidad de plots",amountOfPlots);
-            response.put("canitdad de riegos",amountOfIrrigations);
-            res.status(201).json(response)
+            stringPlot = {"cantplots" : amountOfPlots,
+                            "cantSoja" : soja,
+                            "cantTrigo" : trigo,
+                            "cantMaiz" : maiz,
+                            "cantRiegosRealizados" : amountOfIrrigations};
+            res.status(201).json(stringPlot)
         }else{
             res.status(400).json('No se encontraron parcelas')
         }
     } catch (err) {
-        res.status(500).json('No se pudo realizar la operacion');
+       res.status(500).json('No se pudo realizar la operacion');
     }
 });
 
