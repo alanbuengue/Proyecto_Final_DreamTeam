@@ -26,6 +26,7 @@ app.get('/', function (req, res) {
 // Orion - Get Version
 const fiwareRouter = require("./src/routes/fiwareRoutes");
 const crop = require('./src/db/models/crop');
+const plot = require('./src/db/models/plot');
 app.get('/orion', fiwareRouter);
 app.get('/orion/entities', fiwareRouter);
 app.post('/orion/entities', fiwareRouter);
@@ -1168,6 +1169,46 @@ app.get('/stats', async function (req, res) {
        res.status(500).json('No se pudo realizar la operacion');
     }
 });
+
+app.put('/user/plot', async function (req, res) {
+
+    const { userId,name, email, password,isAdmin,plotCity,plotDescription,idCrop } = req.query;
+
+    try {
+
+        if (userId == "" || name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || idCrop == "") {
+            res.status(401).json('Los valores no pueden ser nulos');
+        } else {
+
+            //Busco que no exista ya el email
+            let auxUser = await User.findOne({
+                where: { id: userId }
+            })
+
+            if (auxUser != null) {
+                const plotFound = await Plot.findOne({
+                    where : {id : auxUser.idPlot}
+                })
+                if(plotFound != null){
+                    plotFound.description = plotDescription;
+                    plotFound.city = plotCity;
+                    plotFound.idCrop = idCrop;
+                    auxUser.name = name;
+                    auxUser.email = email;
+                    auxUser.password = password;
+                    auxUser.isAdmin = isAdmin;
+                    await auxUser.save();
+                    await plotFound.save();
+                    res.status(200).json('Usuario y Parcela modificada con exito!')
+                }
+            } else {
+                res.status(401).json('usuario no encontra');
+            }
+        }
+    } catch (err) {
+        res.status(500).json('Fallo la modificacion del usuario.');
+    }
+})
 
 
 
