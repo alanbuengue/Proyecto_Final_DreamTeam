@@ -1046,17 +1046,6 @@ app.post('/user/login', async function(req,res) {
             res.status(500).send();
         }
 })
-
-app.post('/user/logout', async function(req,res) {
-
-    data = {
-        idUser:0,
-        idPlot:0
-    }
-
-    res.status(201).send(data).json;
-})
-
 app.delete('/user/delete', async function (req, res) {
 
     let idUsuario = req.params.idUsuario;
@@ -1106,19 +1095,21 @@ app.post('/user/plot', async function (req, res) {
             console.log(auxUser)
 
             if (auxUser == null) {
-                const plotCreated = await Plot.create({
+                const plotCreated = Plot.create({
                     description : plotDescription,
                     idCrop : idCrop,
                     city : plotCity
                 })
-                await User.create({
-                    name: name,
-                    email: email,
-                    password: password,
-                    isAdmin: isAdmin,
-                    idPlot: plotCreated.id
+                plotCreated.then((values) =>{
+                     User.create({
+                        name: name,
+                        email: email,
+                        password: password,
+                        isAdmin: isAdmin,
+                        idPlot: values.id
+                    })
+                    res.status(201).json('Usuario y plot creado!');
                 })
-                res.status(201).json('Usuario y plot creado!');
             } else {
                 res.status(401).json('Ya existe ese email');
             }
@@ -1127,6 +1118,26 @@ app.post('/user/plot', async function (req, res) {
         res.status(500).json('Fallo la creacion del usuario.');
     }
 })
+
+app.get('/stats', async function (req, res) {
+
+   let trigo = 0;
+   let soja = 0;
+   let maiz = 0;
+    try {
+        await Irrigation.findOne({
+            where: { id: id } 
+        }).then(async irrigation => {
+            const comments = await Comment.findAll({
+                where: { idIrrigation: irrigation.id }
+            });
+            res.status(201).json(comments);
+        });
+        
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
 
 
 
