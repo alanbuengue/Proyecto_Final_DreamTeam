@@ -385,7 +385,7 @@ app.put('/Irrigation/:id', async function (req, res) {
 
 app.post('/comment', async function (req, res) {
 
-    const { idIrrigation, text } = req.body;
+    const { idIrrigation, text } = req.query;
 
     try {
 
@@ -406,18 +406,18 @@ app.post('/comment', async function (req, res) {
 
 app.put('/comment/:id', async function (req, res) {
 
-    const { idIrrigation, text } = req.body;
     let id = req.params.id;
+    const text  = req.query.comment;
+
+    if(!text || text == "" || !id || id == ""){
+        res.status(401).json('Los valores no pueden ser nulos');
+    }
 
     try {
         let auxComment = await Comment.findOne({
             where: { id: id }
         })
         if (auxComment != null) {
-
-            if (idIrrigation != "") {
-                auxComment.idIrrigation = idIrrigation;
-            }
 
             if (text != "") {
                 auxComment.text = text;
@@ -432,7 +432,7 @@ app.put('/comment/:id', async function (req, res) {
     } catch (err) {
         res.status(500).json('No se pudo realizar la operacion');
     }
-})
+});
 
 
 //********************************************************************** */
@@ -637,7 +637,7 @@ app.get('/comments/:idIrrigation', async function (req, res) {
         res.status(500).json("Error")
     }
 })
-app.post('/login', async function (req, res) {
+/*app.post('/login', async function (req, res) {
 
     const { email, password } = req.body;
     console.log(req.body);
@@ -659,7 +659,7 @@ app.post('/login', async function (req, res) {
     } catch (err) {
         res.status(500).json('error 500 en login');
     }
-})
+})*/
 
 ///**************************************************** */
 
@@ -923,7 +923,7 @@ app.get('/comment/:id', async function (req, res) {
     }
 });
 
-app.get('/irrigation/:id/comments', async function (req, res) {
+/*app.get('/irrigation/:id/comments', async function (req, res) {
 
     const id = req.params.id;
     
@@ -945,7 +945,7 @@ app.get('/irrigation/:id/comments', async function (req, res) {
     } catch (err) {
         res.status(500).json('No se pudo realizar la operacion');
     }
-});
+});*/
 
 
 //DELETE COMMENT BY ID
@@ -978,12 +978,12 @@ app.delete('/comment/:id', async function (req, res) {
 app.delete('/user/:id', async function (req, res) {
 
     let id = req.params.id;
+
     
     if(!id) {
         res.status(401).json('Id incorrecto');
     }
-
-/*     try { */
+    try { 
         let user = await User.findOne({
             where: { id: id }
         })
@@ -1002,16 +1002,16 @@ app.delete('/user/:id', async function (req, res) {
         } else {
             res.status(401).json('El usuario con Id ' + id + " no existe.");
         }
-/*      } catch (err) {
+     } catch (err) {
         res.status(500).json('No se pudo realizar la operacion');
-    }  */
+    }  
 });
 
 
 
 // login with email and password
 app.post('/user/login', async function(req,res) {
-    const { email, password } = req.body;
+    const { email, password } = req.query;
     try {
         if (email == "" || password == "") {
             res.status(401).json('Los valores no pueden ser nulos');
@@ -1046,7 +1046,7 @@ app.post('/user/login', async function(req,res) {
             res.status(500).send();
         }
 })
-app.delete('/user/delete', async function (req, res) {
+/*app.delete('/user/delete', async function (req, res) {
 
     let idUsuario = req.params.idUsuario;
     let idPlot = req.params.idPlot;
@@ -1076,11 +1076,11 @@ app.delete('/user/delete', async function (req, res) {
     } catch (err) {
         res.status(500).json('fallo la baja de usuario y plot');
     }
-});
+});*/
 
 app.post('/user/plot', async function (req, res) {
 
-    const { name, email, password,isAdmin,plotCity,plotDescription,idCrop } = req.body;
+    const { name, email, password,isAdmin,plotCity,plotDescription,idCrop } = req.query;
 
     try {
 
@@ -1121,19 +1121,48 @@ app.post('/user/plot', async function (req, res) {
 
 app.get('/stats', async function (req, res) {
 
-   let trigo = 0;
-   let soja = 0;
-   let maiz = 0;
+  
     try {
-        await Irrigation.findOne({
-            where: { id: id } 
-        }).then(async irrigation => {
-            const comments = await Comment.findAll({
-                where: { idIrrigation: irrigation.id }
-            });
-            res.status(201).json(comments);
-        });
+        let trigo = 0;
+        let soja = 0;
+        let maiz = 0;
+        let amountOfPlots = 0;
+        let response = [];
+        let amountOfIrrigations = 0;
+        const plots = await Plot.findAll();
         
+        if(plots != null){
+            amountOfPlots++;
+            console.log(amountOfPlots);
+            for ( const p of plots) {
+                const irrigations = await Irrigation.findAll({
+                    where : {idPlot :p.id}
+                })
+                for(const i of irrigations){
+                    amountOfIrrigations++;
+                    console.log(amountOfIrrigations);
+                }
+                let auxCrop = await Crop.findOne({
+                    where : {id : p.idCrop}
+                })
+                console.log(auxCrop);
+                if(auxCrop.cropType === "Trigo"){
+                    trigo++;
+                }else if(auxCrop.cropType === "Maiz"){
+                    maiz++;
+                }else if(auxCrop.cropType === "Soja"){
+                    soja++;
+                }
+            }
+            response.put("trigo",trigo);
+            response.put("soja",soja);
+            response.put("maiz",maiz);
+            response.put("cantidad de plots",amountOfPlots);
+            response.put("canitdad de riegos",amountOfIrrigations);
+            res.status(201).json(response)
+        }else{
+            res.status(400).json('No se encontraron parcelas')
+        }
     } catch (err) {
         res.status(500).json('No se pudo realizar la operacion');
     }
