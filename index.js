@@ -1013,31 +1013,34 @@ app.delete('/user/:id', async function (req, res) {
 app.post('/user/login', async function(req,res) {
     const { email, password } = req.body;
     try {
-        const user = await User.findOne({ where: { email, password }})
+        if (email == "" || password == "") {
+            res.status(401).json('Los valores no pueden ser nulos');
+        }else{
+            const user = await User.findOne({ where: { email, password }})
+            if( user == null) {
 
-        if( user == null) {
-
-            data = {
-                idUser:0,
-                idPlot:0
+                data = {
+                    idUser:0,
+                    idPlot:0,
+                    city : '',
+                    isAdmin : false
+                }
+    
+                return res.status(201).send(data).json;
+            }else{
+                let plot = await Plot.findOne({
+                    where: { id: user.idPlot }
+                })
+                data = {
+                    idUser: user.id,
+                    idPlot: user.idPlot,
+                    city: plot.city,
+                    isAdmin: user.isAdmin
+                }
+                res.status(201).send(data).json;
             }
-
-            return res.status(400).send(data).json;
         }
-
-
-        let plot = await Plot.findOne({
-            where: { id: user.idPlot }
-        })
-
-        data = {
-            idUser: user.id,
-            idPlot: user.idPlot,
-            city: plot.city
-        }
-
-
-        res.status(201).send(data).json;
+        
 
         } catch (error) {
             res.status(500).send();
@@ -1112,7 +1115,7 @@ app.post('/user/plot', async function (req, res) {
                     name: name,
                     email: email,
                     password: password,
-                    isAdmin: false,
+                    isAdmin: isAdmin,
                     idPlot: plotCreated.id
                 })
                 res.status(201).json('Usuario y plot creado!');
