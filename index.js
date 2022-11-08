@@ -406,7 +406,6 @@ app.post('/comment', async function (req, res) {
 })
 
 app.put('/comment/:id', async function (req, res) {
-
     let id = req.params.id;
     const text  = req.query.comment;
 
@@ -419,10 +418,6 @@ app.put('/comment/:id', async function (req, res) {
             where: { id: id }
         })
         if (auxComment != null) {
-
-            if (idIrrigation != "") {
-                auxComment.idIrrigation = idIrrigation;
-            }
 
             if (text != "") {
                 auxComment.text = text;
