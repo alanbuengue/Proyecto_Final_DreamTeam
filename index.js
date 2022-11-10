@@ -1262,6 +1262,11 @@ app.get('/user/crop', async function (req, res) {
         res.status(500).json("Error")
     }
 })
+app.get('/aguanteboca', async function (req, res) {
+
+        res.status(200).json('AGUANTE BOKITA')
+   
+})
 
 
 app.listen(process.env.PORT || 5001, () => console.log("run server PORT " + process.env.PORT))
