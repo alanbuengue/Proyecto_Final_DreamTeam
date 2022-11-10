@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     cropType: DataTypes.STRING,
     minus_temp: DataTypes.FLOAT,
     minus_ph: DataTypes.FLOAT,
+    min_humidity: DataTypes.FLOAT,
     max_humidity: DataTypes.FLOAT
   }, {
     sequelize,

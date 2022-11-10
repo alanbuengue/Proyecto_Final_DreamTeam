@@ -25,6 +25,8 @@ app.get('/', function (req, res) {
 
 // Orion - Get Version
 const fiwareRouter = require("./src/routes/fiwareRoutes");
+const crop = require('./src/db/models/crop');
+const plot = require('./src/db/models/plot');
 app.get('/orion', fiwareRouter);
 app.get('/orion/entities', fiwareRouter);
 app.post('/orion/entities', fiwareRouter);
@@ -95,7 +97,7 @@ getCity("manchester")
 const getWeather = async (id) => {
 
     const base = "http://dataservice.accuweather.com/currentconditions/v1/";
-    const query = `${id}?apikey=${key}`
+    const query = `${id}?apikey=${key}&language=${'es-mx'}&details=${'true'}`
 
     const response = await fetch(base + query);
     const data = await response.json();
@@ -384,7 +386,7 @@ app.put('/Irrigation/:id', async function (req, res) {
 
 app.post('/comment', async function (req, res) {
 
-    const { idIrrigation, text } = req.body;
+    const { idIrrigation, text } = req.query;
 
     try {
 
@@ -404,19 +406,18 @@ app.post('/comment', async function (req, res) {
 })
 
 app.put('/comment/:id', async function (req, res) {
-
-    const { idIrrigation, text } = req.body;
     let id = req.params.id;
+    const text  = req.query.comment;
+
+    if(!text || text == "" || !id || id == ""){
+        res.status(401).json('Los valores no pueden ser nulos');
+    }
 
     try {
         let auxComment = await Comment.findOne({
             where: { id: id }
         })
         if (auxComment != null) {
-
-            if (idIrrigation != "") {
-                auxComment.idIrrigation = idIrrigation;
-            }
 
             if (text != "") {
                 auxComment.text = text;
@@ -431,7 +432,7 @@ app.put('/comment/:id', async function (req, res) {
     } catch (err) {
         res.status(500).json('No se pudo realizar la operacion');
     }
-})
+});
 
 
 //********************************************************************** */
@@ -588,7 +589,7 @@ app.put('/ambient/:id', async function (req, res) {
 
 app.get('/irrigations/:idPlot', async function (req, res) {
     try {
-        console.log(req.params)
+        // console.log(req.params)
         let idPlot = req.params.idPlot;
         let irrigations;
         if (idPlot == null || idPlot == undefined || idPlot == '') {
@@ -604,9 +605,9 @@ app.get('/irrigations/:idPlot', async function (req, res) {
         irrigations = await Irrigation.findAll({
             where : {idPlot : idPlot}
         })
-        console.log(irrigations)
+        // console.log(irrigations)
         if(irrigations != null){
-            console.log("hhh"+ irrigations)
+            // console.log("hhh"+ irrigations)
             return res.status(201).json(irrigations);
         }
         if(irrigations == null){
@@ -636,7 +637,7 @@ app.get('/comments/:idIrrigation', async function (req, res) {
         res.status(500).json("Error")
     }
 })
-app.post('/login', async function (req, res) {
+/*app.post('/login', async function (req, res) {
 
     const { email, password } = req.body;
     console.log(req.body);
@@ -658,7 +659,7 @@ app.post('/login', async function (req, res) {
     } catch (err) {
         res.status(500).json('error 500 en login');
     }
-})
+})*/
 
 ///**************************************************** */
 
@@ -700,4 +701,567 @@ app.get('/plot/:plotId', async function(req,res) {
 })
 
 
-app.listen(80);
+//WEATHER INFO FOR ANDROID
+
+app.get('/weatherInfo/:city', async function (req, res) {
+
+    try {
+
+        let city = req.params.city;
+
+        const promise1 = new Promise((resolve, reject) => {
+            resolve(getCity(city).then(data => { //A PARTIR DEL .THEN ES PARA TRAER LA INFO DEL CLIMA. SIN ESO TRAE LA INFO DE LA CIUDAD
+                return getWeather(data.Key); //LE PASO LA KEY DE LA CIUDAD PARA TRAER EL CLIMA
+            }));
+        });
+
+        promise1.then((value) => {
+            console.log(value);
+
+            let rain_desc = value.PrecipitationType;
+            
+            if(rain_desc == null) {
+                rain_desc = "Sin Lluvia"
+            }
+
+            let time = value.LocalObservationDateTime.split("T");
+            let date = time[0].split("-");
+            let timeLong = time[1].split("-");
+            let timeShort = timeLong[0]
+            
+            if(city == "buenosaires") {
+                city = "Buenos Aires";
+            }
+
+            var result = {
+                atmospheric_contition: value.WeatherText,
+                humidity: value.RelativeHumidity,
+                location: city,
+                rain_desc: rain_desc,
+                raining: value.HasPrecipitation,
+                temperature: value.Temperature.Metric.Value,
+                time: timeShort,
+            };
+
+            res.status(201).json(result)
+
+        });
+
+    } catch (err) {
+        res.status(500).json("Error")
+    }
+})
+
+//***************************** */
+//REGAR O NO REGAR, ESA ES LA CUESTION
+
+app.get('/irrigation', async function (req, res) {
+/*
+    const promise1 = new Promise((resolve, reject) => {
+        resolve(getIotMethod());
+    });*/
+
+    const promise1 = new Promise((resolve, reject) => {
+        resolve(irrigationAll());
+    });
+
+    /*
+    promise1.then((value) => {
+
+
+        const humidity = value.humidity.value
+        res.status(201).json(humidity)
+
+    });
+    */
+
+    res.status(201).json("true")
+
+
+})
+
+
+app.get('/comment/:id', async function (req, res) {
+
+    let id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+    try {
+        let comment = await Comment.findOne({
+            where: { id: id }
+        })
+        if (comment != null) {
+            res.status(201).json(comment);
+        } else {
+            res.status(401).json('El comentario con Id ' + id + " no existe.");
+        }
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
+app.get('/irrigation/:id/comments', async function (req, res) {
+
+    const id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('El id no puede ser nulo');
+    }
+
+    try {
+        
+        await Irrigation.findOne({
+            where: { id: id } 
+        }).then(async irrigation => {
+            const comments = await Comment.findAll({
+                where: { idIrrigation: irrigation.id }
+            });
+            res.status(201).json(comments);
+        });
+        
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
+
+
+
+
+
+const irrigationAll = async () => {
+
+    const plots = await Plot.findAll();
+    let plotsCity = plots[0].city //Agarro el plot 0 y pregunto por su ciudad
+
+    let crops = [];
+    
+    for ( const uniqPlot of plots) {
+        
+        const auxCrop = await Crop.findOne({
+            where: { id: uniqPlot.idCrop }
+        })
+
+        crops.push(auxCrop);
+
+    }
+
+    
+    //Traigo la humedad del clima actual
+    const climePromise = new Promise((resolve, reject) => {
+            resolve(getCity(plotsCity).then(data => { //A PARTIR DEL .THEN ES PARA TRAER LA INFO DEL CLIMA. SIN ESO TRAE LA INFO DE LA CIUDAD
+                return getWeather(data.Key); //LE PASO LA KEY DE LA CIUDAD PARA TRAER EL CLIMA
+            }));
+        });
+        
+        
+
+    climePromise.then((value) => {
+        let data = {
+            humidityClima: value.RelativeHumidity, //No use
+            rain_desc: value.HasPrecipitation,
+            temperature: value.Temperature.Metric.Value,
+        }
+
+        console.log(data) //funciona hasta acá
+
+        sensorPromise = new Promise((resolve, reject) => {
+            resolve(getIotMethod());
+        })
+
+        sensorPromise.then((value) => {
+
+            return humiditySensor = value.humidity.value
+        })
+        
+        .then ((data2)=> {
+            
+           // .then ((data2, value) => {
+    
+                for ( const uniqPlot of plots) {
+                    let i = 0;
+                    let auxCrop;
+                    let encontro = false;
+                    while (i < crops.size || !encontro) {
+                        if(crops[i].id === uniqPlot.idCrop){
+                            auxCrop = crops[i];
+                            encontro = true;
+                        }
+                        i++;
+                    }
+                  // console.log(crop)
+                  // console.log(uniqPlot)
+                    
+                   //Si hace mas de 6º en el ambiente = True
+                    if (auxCrop.minus_temp < data.temperature){
+                        
+                        //Si no llueve = True
+                        if (!data.rain_desc) {
+                    
+                            //Si la humedad minima de la planta es mayor que la captada = True
+                            if (auxCrop.min_humidity > humiditySensor) {
+
+                                //Si llegamos hasta acá hay que regar!!
+                                console.log("HAY QUE REGAR " + uniqPlot.id)
+
+                                water = ((auxCrop.max_humidity - humiditySensor) * 100)
+
+                                Irrigation.create({
+                                    waterUsed: water,
+                                    idPlot: uniqPlot.id,
+                                })
+
+                            }
+
+                         }      
+                        
+                    }
+
+                    console.log("Vuelta del for each")
+                }         
+            })
+        }
+      
+    )
+        
+    }
+
+
+
+
+async function getIotMethod() {
+
+    const base = "http://localhost/iot?entityId=ambiente:001&serviceHeader=sensor&servicePathHeader=/";
+
+    const response = await fetch(base);
+    const data = await response.json();
+
+    return data;
+}
+
+
+//************************************ */
+//COMMENTS IRRIGATION
+
+app.get('/comment/:id', async function (req, res) {
+
+    let id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+    try {
+        let comment = await Comment.findOne({
+            where: { id: id }
+        })
+        if (comment != null) {
+            res.status(201).json(comment);
+        } else {
+            res.status(401).json('El comentario con Id ' + id + " no existe.");
+        }
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
+/*app.get('/irrigation/:id/comments', async function (req, res) {
+
+    const id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('El id no puede ser nulo');
+    }
+
+    try {
+        
+        await Irrigation.findOne({
+            where: { id: id } 
+        }).then(async irrigation => {
+            const comments = await Comment.findAll({
+                where: { idIrrigation: irrigation.id }
+            });
+            res.status(201).json(comments);
+        });
+        
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});*/
+
+
+//DELETE COMMENT BY ID
+
+app.delete('/comment/:id', async function (req, res) {
+
+    let id = req.params.id;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+    try {
+        let comment = await Comment.findOne({
+            where: { id: id }
+        })
+        if (comment != null) {
+            await comment.destroy()
+            res.status(201).json('Comentario ' + id + ' eliminado');
+        } else {
+            res.status(401).json('El comentario con Id ' + id + " no existe.");
+        }
+    } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
+
+//DELETE USER AND PLOT
+app.delete('/user/:id', async function (req, res) {
+
+    let id = req.params.id;
+
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+    try { 
+        let user = await User.findOne({
+            where: { id: id }
+        })
+        
+        if (user != null ) {
+            
+            let plot = await Plot.findOne({
+                where: { id: user.idPlot }
+            })
+
+            let idParcela = user.idPlot
+
+            user.destroy()
+            plot.destroy()
+            res.status(201).json('Usuario ' + id + ' y parcela ' + idParcela + ' eliminado');
+        } else {
+            res.status(401).json('El usuario con Id ' + id + " no existe.");
+        }
+     } catch (err) {
+        res.status(500).json('No se pudo realizar la operacion');
+    }  
+});
+
+
+
+// login with email and password
+app.post('/user/login', async function(req,res) {
+    const { email, password } = req.query;
+    try {
+        if (email == "" || password == "") {
+            res.status(401).json('Los valores no pueden ser nulos');
+        }else{
+            const user = await User.findOne({ where: { email, password }})
+            if( user == null) {
+
+                data = {
+                    idUser:0,
+                    idPlot:0,
+                    city : '',
+                    isAdmin : false
+                }
+    
+                return res.status(201).send(data).json;
+            }else{
+                let plot = await Plot.findOne({
+                    where: { id: user.idPlot }
+                })
+                data = {
+                    idUser: user.id,
+                    idPlot: user.idPlot,
+                    city: plot.city,
+                    isAdmin: user.isAdmin
+                }
+                res.status(201).send(data).json;
+            }
+        }
+        
+
+        } catch (error) {
+            res.status(500).send();
+        }
+})
+/*app.delete('/user/delete', async function (req, res) {
+
+    let idUsuario = req.params.idUsuario;
+    let idPlot = req.params.idPlot;
+    
+    if(!id) {
+        res.status(401).json('Id incorrecto');
+    }
+
+    try {
+        if(idUsuario != null && idPlot != null){
+            let usuario = await User.findOne({
+                where : {id : idUsuario}
+            })
+            let plot = await Plot.findOne({
+                where : {id : idPlot}
+            })
+            if(usuario != null && plot != null){
+                await usuario.destroy();
+                await plot.destroy();
+                res.status(200).json('El usuario y el plot se eliminaron correctamente')
+            }else{
+                res.status(401).json('No se encontre ningun usuario/Plot con el id enviado')
+            }
+        } else{
+            res.status(401).json('Id Usuario o idPlot incorrecto');
+        }
+    } catch (err) {
+        res.status(500).json('fallo la baja de usuario y plot');
+    }
+});*/
+
+app.post('/user/plot', async function (req, res) {
+
+    const { name, email, password,isAdmin,plotCity,plotDescription,idCrop } = req.query;
+
+    try {
+
+        if (name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || idCrop == "") {
+            res.status(401).json('Los valores no pueden ser nulos');
+        } else {
+
+            //Busco que no exista ya el email
+            let auxUser = await User.findOne({
+                where: { email: email }
+            })
+            console.log(auxUser)
+
+            if (auxUser == null) {
+                const plotCreated = Plot.create({
+                    description : plotDescription,
+                    idCrop : idCrop,
+                    city : plotCity
+                })
+                plotCreated.then((values) =>{
+                     User.create({
+                        name: name,
+                        email: email,
+                        password: password,
+                        isAdmin: isAdmin,
+                        idPlot: values.id
+                    })
+                    res.status(201).json('Usuario y plot creado!');
+                })
+            } else {
+                res.status(401).json('Ya existe ese email');
+            }
+        }
+    } catch (err) {
+        res.status(500).json('Fallo la creacion del usuario.');
+    }
+})
+
+app.get('/stats', async function (req, res) {
+
+  
+    try {
+        let trigo = 0;
+        let soja = 0;
+        let maiz = 0;
+        let amountOfPlots = 0;
+        let response = [];
+        let amountOfIrrigations = 0;
+        const plots = await Plot.findAll();
+        
+        if(plots != null){
+            for await (const p of plots) {
+                amountOfPlots++;
+                const irrigations = await Irrigation.findAll({
+                    where : {idPlot :p.id}
+                })
+                for await(const i of irrigations){
+                    amountOfIrrigations++;
+                }
+                let auxCrop = await Crop.findOne({
+                    where : {id : p.idCrop}
+                })
+                
+                    if(auxCrop.cropType === "Trigo"){
+                        trigo++;
+                    }else if(auxCrop.cropType === "Maiz"){
+                        maiz++;
+                    }else if(auxCrop.cropType === "Soja"){
+                        soja++;
+                    }
+                    console.log('maiz', maiz);
+                    console.log('soja', soja);  
+                    console.log('trigo', trigo);
+            }
+            stringPlot = {"cantplots" : amountOfPlots,
+                            "cantSoja" : soja,
+                            "cantTrigo" : trigo,
+                            "cantMaiz" : maiz,
+                            "cantRiegosRealizados" : amountOfIrrigations};
+            res.status(201).json(stringPlot)
+        }else{
+            res.status(400).json('No se encontraron parcelas')
+        }
+    } catch (err) {
+       res.status(500).json('No se pudo realizar la operacion');
+    }
+});
+
+app.put('/user/plot', async function (req, res) {
+
+    const { userId,name, email, password,isAdmin,plotCity,plotDescription,idCrop } = req.query;
+
+    try {
+
+        if (userId == "" || name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || idCrop == "") {
+            res.status(401).json('Los valores no pueden ser nulos');
+        } else {
+
+            //Busco que no exista ya el email
+            let auxUser = await User.findOne({
+                where: { id: userId }
+            })
+
+            if (auxUser != null) {
+                const plotFound = await Plot.findOne({
+                    where : {id : auxUser.idPlot}
+                })
+                if(plotFound != null){
+                    plotFound.description = plotDescription;
+                    plotFound.city = plotCity;
+                    plotFound.idCrop = idCrop;
+                    auxUser.name = name;
+                    auxUser.email = email;
+                    auxUser.password = password;
+                    auxUser.isAdmin = isAdmin;
+                    await auxUser.save();
+                    await plotFound.save();
+                    res.status(200).json('Usuario y Parcela modificada con exito!')
+                }
+            } else {
+                res.status(401).json('usuario no encontra');
+            }
+        }
+    } catch (err) {
+        res.status(500).json('Fallo la modificacion del usuario.');
+    }
+})
+app.get('/user/crop', async function (req, res) {
+
+    try {
+        const crops = await Crop.findAll();
+        res.status(200).json(crops)
+    } catch (err) {
+        res.status(500).json("Error")
+    }
+})
+
+app.listen(process.env.PORT || 3000, () => console.log("run server PORT " + process.env.PORT))
+//app.listen(80);

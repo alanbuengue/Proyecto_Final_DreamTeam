@@ -15,6 +15,9 @@ module.exports = {
       idCrop: {
         type: Sequelize.INTEGER
       },
+      city: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

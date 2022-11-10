@@ -24,7 +24,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   Plot.init({
     description: DataTypes.STRING,
-    idCrop: DataTypes.INTEGER
+    idCrop: DataTypes.INTEGER,
+    city: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Plot',
