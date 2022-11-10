@@ -22,7 +22,6 @@ app.get('/', function (req, res) {
     return res.json("Holis");
 });
 // Fiware Routes
-//const PORT = process.env.PORT;
 
 // Orion - Get Version
 const fiwareRouter = require("./src/routes/fiwareRoutes");
