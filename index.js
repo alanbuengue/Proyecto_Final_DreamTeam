@@ -46,6 +46,47 @@ app.post('/iot/devices',fiwareRouter);
 
 
 
+app.get('/users/info', async function(req, res) {
+
+    try {
+        class UserPlot {
+            constructor(userId, name, email, password, isAdmin, plotCity, plotDescription, idCrop, cropType) {
+                this.userId = userId;
+                this.name = name;
+                this.email = email;
+                this.password = password;
+                this.isAdmin = isAdmin;
+                this.plotCity = plotCity;
+                this.plotDescription = plotDescription;
+                this.idCrop = idCrop;
+                this.cropType = cropType
+            }
+        }
+
+        const users = await User.findAll()
+        const plots = await Plot.findAll()
+        const crops = await Crop.findAll()
+
+        let usersPlots = []
+
+        for await (const u of users) {
+            for await (const p of plots) {
+                for await (const c of crops) {
+                    if (u.idPlot == p.id && p.idCrop == c.id) {
+                        usersPlots.push(new UserPlot(u.id, u.name, u.email, u.password, u.isAdmin, p.city, p.description, p.idCrop, c.cropType))
+                    }
+                }
+            }
+        }
+        
+        return res.status(200).json(usersPlots)
+    
+    } catch (error) {
+        return res.status(202).json(error)
+    }
+    
+});
+
 
 //get city information
 app.get('/weather/:city', async function (req, res) {
@@ -83,13 +124,6 @@ const getCity = async (city) => {
 
     return data[0];
 };
-
-/*
-getCity("manchester")
-    .then(data=> console.log(data))
-    .catch(err => console.log(err));
-
-    */
 
 
 //get weather information
@@ -1253,6 +1287,7 @@ app.put('/user/plot', async function (req, res) {
         res.status(500).json('Fallo la modificacion del usuario.');
     }
 })
+
 app.get('/user/crop', async function (req, res) {
 
     try {
