@@ -67,6 +67,10 @@ app.get('/users/info', async function(req, res) {
         const plots = await Plot.findAll()
         const crops = await Crop.findAll()
 
+        if(crops.length == 0 || plots.length == 0 || users.length == 0) {
+            return res.json("No hay registros suficientes")
+        }
+
         let usersPlots = []
 
         for await (const u of users) {
@@ -1157,21 +1161,27 @@ app.post('/user/login', async function(req,res) {
     }
 });*/
 
+// called in createUser() from Android
 app.post('/user/plot', async function (req, res) {
 
-    const { name, email, password,isAdmin,plotCity,plotDescription,idCrop } = req.query;
+    const { name, email, password, isAdmin, plotCity, plotDescription, cropType } = req.query;
 
     try {
 
-        if (name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || idCrop == "") {
+        if (name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || cropType == "") {
             res.status(401).json('Los valores no pueden ser nulos');
         } else {
 
-            //Busco que no exista ya el email
+            // Busco que no exista ya el email
             let auxUser = await User.findOne({
                 where: { email: email }
             })
-            console.log(auxUser)
+
+            const selectedCrop = await Crop.findOne({
+                where: { cropType: cropType }
+            });
+
+            const idCrop = selectedCrop.id;
 
             if (auxUser == null) {
                 const plotCreated = Plot.create({
@@ -1250,11 +1260,11 @@ app.get('/stats', async function (req, res) {
 
 app.put('/user/plot', async function (req, res) {
 
-    const { userId,name, email, password,isAdmin,plotCity,plotDescription,idCrop } = req.query;
+    const { userId, name, email, password, isAdmin, plotCity, plotDescription, cropType } = req.query;
 
     try {
 
-        if (userId == "" || name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || idCrop == "") {
+        if (userId == "" || name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || cropType == "") {
             res.status(401).json('Los valores no pueden ser nulos');
         } else {
 
@@ -1263,7 +1273,13 @@ app.put('/user/plot', async function (req, res) {
                 where: { id: userId }
             })
 
-            if (auxUser != null) {
+            const selectedCrop = await Crop.findOne({
+                where: { cropType: cropType }
+            });
+
+            const idCrop = selectedCrop.id;
+
+            if (auxUser != null && idCrop != null) {
                 const plotFound = await Plot.findOne({
                     where : {id : auxUser.idPlot}
                 })
