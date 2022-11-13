@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+// moment js date time management
+const moment = require('moment');
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -27,6 +29,7 @@ app.get('/', function (req, res) {
 const fiwareRouter = require("./src/routes/fiwareRoutes");
 const crop = require('./src/db/models/crop');
 const plot = require('./src/db/models/plot');
+const irrigation = require('./src/db/models/irrigation');
 app.get('/orion', fiwareRouter);
 app.get('/orion/entities', fiwareRouter);
 app.post('/orion/entities', fiwareRouter);
@@ -627,34 +630,39 @@ app.put('/ambient/:id', async function (req, res) {
 
 app.get('/irrigations/:idPlot', async function (req, res) {
     try {
-        // console.log(req.params)
+
+        
         let idPlot = req.params.idPlot;
         let irrigations;
+        
         if (idPlot == null || idPlot == undefined || idPlot == '') {
-            return res.Status(400).json("Invalid IdPlot")
+            return res.status(400).json("Invalid IdPlot")
         }
-        /*let myPlot = await Plot.findOne({
-            where : {id : plotId}
-        })*/
-        /*if(myPlot != null ){
-             irrigations = await myPlot.getIrrigations();
-        }*/
-
+        
         irrigations = await Irrigation.findAll({
             where : {idPlot : idPlot}
         })
-        // console.log(irrigations)
-        if(irrigations != null){
-            // console.log("hhh"+ irrigations)
-            return res.status(201).json(irrigations);
+        
+        if(irrigations != null) {
+            
+            // correct date format for the frontend
+            irrigations.forEach(irrigation => {
+                let date = moment(irrigation.createdAt).format('DD/MM/YYYY H:mm')
+                irrigation.dataValues.createdAt = date
+            });
+            
+            return res.status(201).json(irrigations)
         }
-        if(irrigations == null){
+    
+        if(irrigations == null) {
             return res.status(201).json("No irrigations found for the Plot Id")
         }
+    
     } catch (err) {
         res.status(400).json(err)
     }
 })
+
 app.get('/comments/:idIrrigation', async function (req, res) {
     try {
         let idIrrigation = req.params.idIrrigation;
