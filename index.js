@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+// moment js date time management
+const moment = require('moment');
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -27,6 +29,7 @@ app.get('/', function (req, res) {
 const fiwareRouter = require("./src/routes/fiwareRoutes");
 const crop = require('./src/db/models/crop');
 const plot = require('./src/db/models/plot');
+const irrigation = require('./src/db/models/irrigation');
 app.get('/orion', fiwareRouter);
 app.get('/orion/entities', fiwareRouter);
 app.post('/orion/entities', fiwareRouter);
@@ -45,6 +48,51 @@ app.post('/iot/services',fiwareRouter);
 app.post('/iot/devices',fiwareRouter);
 
 
+
+app.get('/users/info', async function(req, res) {
+
+    try {
+        class UserPlot {
+            constructor(userId, name, email, password, isAdmin, plotCity, plotDescription, idCrop, cropType) {
+                this.userId = userId;
+                this.name = name;
+                this.email = email;
+                this.password = password;
+                this.isAdmin = isAdmin;
+                this.plotCity = plotCity;
+                this.plotDescription = plotDescription;
+                this.idCrop = idCrop;
+                this.cropType = cropType
+            }
+        }
+
+        const users = await User.findAll( { where: { isAdmin: false }} )
+        const plots = await Plot.findAll()
+        const crops = await Crop.findAll()
+
+        if(crops.length == 0 || plots.length == 0 || users.length == 0) {
+            return res.json("No hay registros suficientes")
+        }
+
+        let usersPlots = []
+
+        for await (const u of users) {
+            for await (const p of plots) {
+                for await (const c of crops) {
+                    if (u.idPlot == p.id && p.idCrop == c.id) {
+                        usersPlots.push(new UserPlot(u.id, u.name, u.email, u.password, u.isAdmin, p.city, p.description, p.idCrop, c.cropType))
+                    }
+                }
+            }
+        }
+        
+        return res.status(200).json(usersPlots)
+    
+    } catch (error) {
+        return res.status(202).json(error)
+    }
+    
+});
 
 
 //get city information
@@ -83,13 +131,6 @@ const getCity = async (city) => {
 
     return data[0];
 };
-
-/*
-getCity("manchester")
-    .then(data=> console.log(data))
-    .catch(err => console.log(err));
-
-    */
 
 
 //get weather information
@@ -589,34 +630,39 @@ app.put('/ambient/:id', async function (req, res) {
 
 app.get('/irrigations/:idPlot', async function (req, res) {
     try {
-        // console.log(req.params)
+
+        
         let idPlot = req.params.idPlot;
         let irrigations;
+        
         if (idPlot == null || idPlot == undefined || idPlot == '') {
-            return res.Status(400).json("Invalid IdPlot")
+            return res.status(400).json("Invalid IdPlot")
         }
-        /*let myPlot = await Plot.findOne({
-            where : {id : plotId}
-        })*/
-        /*if(myPlot != null ){
-             irrigations = await myPlot.getIrrigations();
-        }*/
-
+        
         irrigations = await Irrigation.findAll({
             where : {idPlot : idPlot}
         })
-        // console.log(irrigations)
-        if(irrigations != null){
-            // console.log("hhh"+ irrigations)
-            return res.status(201).json(irrigations);
+        
+        if(irrigations != null) {
+            
+            // correct date format for the frontend
+            irrigations.forEach(irrigation => {
+                let date = moment(irrigation.createdAt).format('DD/MM/YYYY H:mm')
+                irrigation.dataValues.createdAt = date
+            });
+            
+            return res.status(201).json(irrigations)
         }
-        if(irrigations == null){
+    
+        if(irrigations == null) {
             return res.status(201).json("No irrigations found for the Plot Id")
         }
+    
     } catch (err) {
         res.status(400).json(err)
     }
 })
+
 app.get('/comments/:idIrrigation', async function (req, res) {
     try {
         let idIrrigation = req.params.idIrrigation;
@@ -1123,21 +1169,27 @@ app.post('/user/login', async function(req,res) {
     }
 });*/
 
+// called in createUser() from Android
 app.post('/user/plot', async function (req, res) {
 
-    const { name, email, password,isAdmin,plotCity,plotDescription,idCrop } = req.query;
+    const { name, email, password, isAdmin, plotCity, plotDescription, cropType } = req.query;
 
     try {
 
-        if (name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || idCrop == "") {
+        if (name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || cropType == "") {
             res.status(401).json('Los valores no pueden ser nulos');
         } else {
 
-            //Busco que no exista ya el email
+            // Busco que no exista ya el email
             let auxUser = await User.findOne({
                 where: { email: email }
             })
-            console.log(auxUser)
+
+            const selectedCrop = await Crop.findOne({
+                where: { cropType: cropType }
+            });
+
+            const idCrop = selectedCrop.id;
 
             if (auxUser == null) {
                 const plotCreated = Plot.create({
@@ -1216,11 +1268,11 @@ app.get('/stats', async function (req, res) {
 
 app.put('/user/plot', async function (req, res) {
 
-    const { userId,name, email, password,isAdmin,plotCity,plotDescription,idCrop } = req.query;
+    const { userId, name, email, password, isAdmin, plotCity, plotDescription, cropType } = req.query;
 
     try {
 
-        if (userId == "" || name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || idCrop == "") {
+        if (userId == "" || name == "" || email == "" || password == "" || isAdmin == "" || plotCity == "" || plotDescription == "" || cropType == "") {
             res.status(401).json('Los valores no pueden ser nulos');
         } else {
 
@@ -1229,7 +1281,13 @@ app.put('/user/plot', async function (req, res) {
                 where: { id: userId }
             })
 
-            if (auxUser != null) {
+            const selectedCrop = await Crop.findOne({
+                where: { cropType: cropType }
+            });
+
+            const idCrop = selectedCrop.id;
+
+            if (auxUser != null && idCrop != null) {
                 const plotFound = await Plot.findOne({
                     where : {id : auxUser.idPlot}
                 })
@@ -1253,6 +1311,7 @@ app.put('/user/plot', async function (req, res) {
         res.status(500).json('Fallo la modificacion del usuario.');
     }
 })
+
 app.get('/user/crop', async function (req, res) {
 
     try {
@@ -1262,6 +1321,9 @@ app.get('/user/crop', async function (req, res) {
         res.status(500).json("Error")
     }
 })
+
+app.listen(process.env.PORT || 5001, () => console.log("run server PORT " + process.env.PORT))
+//app.listen(80);
 
 app.listen(process.env.PORT || 5001, () => console.log("run server PORT " + process.env.PORT))
 //app.listen(80);
