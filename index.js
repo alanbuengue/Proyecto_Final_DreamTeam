@@ -66,7 +66,7 @@ app.get('/users/info', async function(req, res) {
             }
         }
 
-        const users = await User.findAll()
+        const users = await User.findAll( { where: { isAdmin: false }} )
         const plots = await Plot.findAll()
         const crops = await Crop.findAll()
 
