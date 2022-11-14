@@ -14,7 +14,19 @@ module.exports = {
     idPlot: 1,
     createdAt: new Date,
     updatedAt: new Date
-  }], {});
+  },
+  {
+    waterUsed: 100,
+    idPlot: 1,
+    createdAt: new Date,
+    updatedAt: new Date
+    },
+    {
+      waterUsed: 50,
+      idPlot: 1,
+      createdAt: new Date,
+      updatedAt: new Date
+      },], {});
     },
 
   async down (queryInterface, Sequelize) {
