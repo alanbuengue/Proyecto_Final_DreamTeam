@@ -979,8 +979,8 @@ const irrigationAll = async () => {
 
 
 async function getIotMethod() {
-
-    const base = "http://localhost/iot?entityId=ambiente:001&serviceHeader=sensor&servicePathHeader=/";
+    
+    const base = "https://proyectofinaldreamteam-alan-test.up.railway.app/iot?entityId=ambiente:001&serviceHeader=sensor&servicePathHeader=/";
 
     const response = await fetch(base);
     const data = await response.json();
